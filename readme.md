@@ -6,6 +6,6 @@ Output data are also csv files, names "output_[filename].csv", with one column p
 
 To run the code in terminal :
 ```
-python ITscript.py -f "vassiliadisData.csv"
+python ITscript.py -f "exampleData.csv"
 ```
 A. Zénon, August 2023
