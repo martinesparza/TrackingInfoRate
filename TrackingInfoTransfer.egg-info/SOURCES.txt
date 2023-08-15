@@ -1,0 +1,10 @@
+ITscript.py
+idtxl test.py
+information_transfer.py
+main.py
+setup.py
+TrackingInfoTransfer.egg-info/PKG-INFO
+TrackingInfoTransfer.egg-info/SOURCES.txt
+TrackingInfoTransfer.egg-info/dependency_links.txt
+TrackingInfoTransfer.egg-info/entry_points.txt
+TrackingInfoTransfer.egg-info/top_level.txt
