@@ -8,11 +8,10 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--filename", type=str, default='')
-parser.add_argument("-p", "--path", type=str, default='')
+parser.add_argument("-p", "--path", type=str, default='data/')
 parser.add_argument("-pl", "--plot", type=bool, default=False)
 args = parser.parse_args()
 
-args.path = "data/"
 # functions for dealing with nans
 def nan_helper(y):
     return np.isnan(y), lambda z: z.nonzero()[0]
@@ -46,11 +45,31 @@ def load_data(path,filename):
 def compute_info_transfer(path=None,filename=None):
     if filename is None:
         if (args.path):
+            df = pd.DataFrame()
             directory = os.fsencode(args.path)
             for file in os.listdir(directory):
                 filename = os.fsdecode(file)
                 if filename.endswith(".csv"):
-                    compute_info_transfer(args.path,filename)
+                    df = pd.concat((df,compute_info_transfer(args.path,filename)))
+            dfmean = df.groupby(level=0).mean()
+            # plotting average
+            if True:
+                t = dfmean.TrialNumber  # adding 6 to trial number because of the 6 training trials
+                fig = plt.figure()
+                plt.subplot(1, 2, 1)
+                plt.plot(t, dfmean.TargetFeedback, 'b', t, dfmean.ColourFeedback, 'g', t, dfmean.BothFeedback, 'r')
+                plt.title("Average result: Feedback info")
+                plt.xlabel("Trial number")
+                plt.ylabel("FB")
+                plt.legend(['Target','Colour','Both'])
+                plt.subplot(1, 2, 2)
+                plt.plot(t, dfmean.TargetFeedforward, 'b', t, dfmean.ColourFeedforward, 'g', t, dfmean.BothFeedforward, 'r')
+                plt.title("Average result: Feedforward info")
+                plt.xlabel("Trial number")
+                plt.ylabel("FF")
+                plt.legend(['Target', 'Colour', 'Both'])
+                plt.show()
+
     else:
         cursor, colour, target, allTrials = load_data(path,filename)
         # only target
@@ -101,8 +120,10 @@ def compute_info_transfer(path=None,filename=None):
             plt.ylabel("FF")
             plt.show()
 
+        return df
+
 VMD=17
 if args.filename:
-    compute_info_transfer(args.filename)
+    compute_info_transfer(args.path,args.filename)
 else:
     compute_info_transfer()
