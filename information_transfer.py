@@ -61,4 +61,4 @@ def compute_total_info(inputs,output,order,vmd):
                        axis=1))
     total_nc = df.shape[1]
     total_list = list(range(1, total_nc))
-    return k.cmi(['0'], total_list, [], k_cst, df)
+    return k.cmi([0], total_list, [], k_cst, df)
