@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import argparse
 import os
+import matplotlib
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--filename", type=str, default='')
@@ -52,23 +53,25 @@ def compute_info_transfer(path=None,filename=None):
                 if filename.endswith(".csv"):
                     df = pd.concat((df,compute_info_transfer(args.path,filename)))
             dfmean = df.groupby(level=0).mean()
+
             # plotting average
             if True:
                 t = dfmean.TrialNumber  # adding 6 to trial number because of the 6 training trials
                 fig = plt.figure()
                 plt.subplot(1, 2, 1)
-                plt.plot(t, dfmean.TargetFeedback, 'b', t, dfmean.ColourFeedback, 'g', t, dfmean.BothFeedback, 'r')
+                plt.plot(t, dfmean.TargetFeedback, 'b', t,
+                         dfmean.ColourFeedback, 'g', t, dfmean.BothFeedback, 'r')
                 plt.title("Average result: Feedback info")
                 plt.xlabel("Trial number")
                 plt.ylabel("FB")
-                plt.legend(['Target','Colour','Both'])
+                plt.legend(['Target', 'Colour', 'Both'])
                 plt.subplot(1, 2, 2)
                 plt.plot(t, dfmean.TargetFeedforward, 'b', t, dfmean.ColourFeedforward, 'g', t, dfmean.BothFeedforward, 'r')
                 plt.title("Average result: Feedforward info")
                 plt.xlabel("Trial number")
                 plt.ylabel("FF")
                 plt.legend(['Target', 'Colour', 'Both'])
-                plt.show()
+                plt.savefig('./figures/average.png')
 
     else:
         cursor, colour, target, allTrials = load_data(path,filename)
@@ -118,7 +121,9 @@ def compute_info_transfer(path=None,filename=None):
             plt.title("Feedforward info")
             plt.xlabel("Trial number")
             plt.ylabel("FF")
-            plt.show()
+            plt.legend(['Target', 'Colour', 'Both'])
+            plt.suptitle(f"File: {args.filename}")
+            plt.savefig(f"./figures/{args.filename}.png")
 
         return df
 

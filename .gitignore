@@ -1,1 +1,4 @@
 .idea/poetry.lock
+data/
+output/
+figures/
