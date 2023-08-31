@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "trackinginforate"
+version = "0.1.0"
+description = ""
+authors = ["Martin Esparza <martinesparza22.me@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = "^1.25.2"
+pandas = "^2.1.0"
+knncmi = {git = "git@github.com:omesner/knncmi.git", rev = "master"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
