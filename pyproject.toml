@@ -13,6 +13,8 @@ knncmi = {git = "git@github.com:omesner/knncmi.git", rev = "master"}
 matplotlib = "^3.7.2"
 scipy = "^1.11.2"
 ipython = "^8.14.0"
+tqdm = "^4.66.1"
+seaborn = "^0.12.2"
 
 
 [build-system]

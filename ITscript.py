@@ -1,11 +1,16 @@
 # Import classes
+import pathlib
+
 import matplotlib.pyplot as plt
 import information_transfer as it
 import numpy as np
 import pandas as pd
 import argparse
 import os
-import matplotlib
+from __init__ import PATHS
+from tqdm import tqdm
+import seaborn as sns
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--filename", type=str, default='')
@@ -48,30 +53,73 @@ def compute_info_transfer(path=None,filename=None):
         if (args.path):
             df = pd.DataFrame()
             directory = os.fsencode(args.path)
-            for file in os.listdir(directory):
+            for file in tqdm(os.listdir(directory)):
                 filename = os.fsdecode(file)
                 if filename.endswith(".csv"):
                     df = pd.concat((df,compute_info_transfer(args.path,filename)))
             dfmean = df.groupby(level=0).mean()
-
+            dfstd = df.groupby(level=0).std()
             # plotting average
             if True:
                 t = dfmean.TrialNumber  # adding 6 to trial number because of the 6 training trials
-                fig = plt.figure()
-                plt.subplot(1, 2, 1)
-                plt.plot(t, dfmean.TargetFeedback, 'b', t,
+
+                sns.set_context('talk')
+                fig, ax = plt.subplots(1, 2, figsize=(12, 4),
+                                       sharex='all')
+                # breakpoint()
+                fb_target_mean = dfmean.TargetFeedback
+                fb_target_std = dfstd.TargetFeedback / np.sqrt(24)
+                fb_colour_mean = dfmean.ColourFeedback
+                fb_colour_std = dfstd.ColourFeedback / np.sqrt(24)
+                fb_both_mean = dfmean.BothFeedback
+                fb_both_std = dfstd.BothFeedback / np.sqrt(24)
+
+                ff_target_mean = dfmean.TargetFeedforward
+                ff_target_std = dfstd.TargetFeedforward / np.sqrt(24)
+                ff_colour_mean = dfmean.ColourFeedforward
+                ff_colour_std = dfstd.ColourFeedforward / np.sqrt(24)
+                ff_both_mean = dfmean.BothFeedforward
+                ff_both_std = dfstd.BothFeedforward / np.sqrt(24)
+
+                ax[0].plot(t, dfmean.TargetFeedback, 'b', t,
                          dfmean.ColourFeedback, 'g', t, dfmean.BothFeedback, 'r')
-                plt.title("Average result: Feedback info")
-                plt.xlabel("Trial number")
-                plt.ylabel("FB")
-                plt.legend(['Target', 'Colour', 'Both'])
-                plt.subplot(1, 2, 2)
-                plt.plot(t, dfmean.TargetFeedforward, 'b', t, dfmean.ColourFeedforward, 'g', t, dfmean.BothFeedforward, 'r')
-                plt.title("Average result: Feedforward info")
-                plt.xlabel("Trial number")
-                plt.ylabel("FF")
-                plt.legend(['Target', 'Colour', 'Both'])
-                plt.savefig('./figures/average.png')
+                ax[0].fill_between(t, fb_target_mean - fb_target_std,
+                                   fb_target_mean + fb_target_std,
+                                   color='b', alpha=0.2)
+
+                ax[0].fill_between(t, fb_colour_mean - fb_colour_std,
+                                   fb_colour_mean + fb_colour_std,
+                                   color='g', alpha=0.2)
+
+                ax[0].fill_between(t, fb_both_mean - fb_both_std,
+                                   fb_both_mean + fb_both_std,
+                                   color='r', alpha=0.2)
+                ax[0].set_title("Feedback info")
+                ax[0].set_xlabel("Trial number")
+                ax[0].set_ylabel("FB")
+                # ax[0].legend(['Target', 'Colour', 'Both'])
+                ax[0].set_ylim([0, 0.2])
+                ax[1].plot(t, dfmean.TargetFeedforward, 'b', t,
+                       dfmean.ColourFeedforward, 'g', t, dfmean.BothFeedforward, 'r')
+                ax[1].fill_between(t, ff_target_mean - ff_target_std,
+                                   ff_target_mean + ff_target_std,
+                                   color='b', alpha=0.2)
+
+                ax[1].fill_between(t, ff_colour_mean - ff_colour_std,
+                                   ff_colour_mean + ff_colour_std,
+                                   color='g', alpha=0.2)
+
+                ax[1].fill_between(t, ff_both_mean - ff_both_std,
+                                   ff_both_mean + ff_both_std,
+                                   color='r', alpha=0.2)
+                ax[1].set_title("Feedforward info")
+                ax[1].set_xlabel("Trial number")
+                ax[1].set_ylabel("FF")
+                ax[1].set_xlim([0, 30])
+                # plt.legend(['Target', 'Colour', 'Both'])
+                plt.tight_layout()
+                # plt.suptitle(f"Condition: {filename[-5:-4]}")
+                plt.savefig(f"./figures/cond{filename[-5:-4]}")
 
     else:
         cursor, colour, target, allTrials = load_data(path,filename)
@@ -105,7 +153,11 @@ def compute_info_transfer(path=None,filename=None):
         df = pd.DataFrame(zipped, columns=['TrialNumber','TargetFeedback', 'TargetFeedforward', 'TargetTotalInfo',
                                            'ColourFeedback', 'ColourFeedforward', 'ColourTotalInfo',
                                            'BothFeedback', 'BothFeedforward', 'BothTotalInfo'])
-        df.to_csv('output/' + 'output_' + filename, index=False)
+
+        pathlib.Path(PATHS.output_path / f"cond{filename[-5:-4]}").mkdir(parents=True,
+                                                    exist_ok=True)
+        df.to_csv(f"output/cond{filename[-5:-4]}/output_{filename}",
+                  index=False)
 
         #plotting
         if args.plot:

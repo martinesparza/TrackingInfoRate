@@ -11,3 +11,4 @@ from pathlib import Path
 class PATHS:
     data_path: Path = './data'
     preprocessed_data_path: Path = './preprocessed_data'
+    output_path: Path = Path('./output')
