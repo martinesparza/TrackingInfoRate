@@ -57,7 +57,7 @@ def load_data(path, filename):
 
 
 # compute FB, FF and total info
-def compute_info_transfer(path=None, filename=None, groupby='ff_fb'):
+def compute_info_transfer(path=None, filename=None, groupby='subject'):
     if filename is None:
         if (args.path):
             df = pd.DataFrame()
@@ -70,64 +70,64 @@ def compute_info_transfer(path=None, filename=None, groupby='ff_fb'):
                     new_df['Cond'] = cond * np.ones(len(new_df)).astype(
                         'int32')
                     df = pd.concat((df, new_df))
-
             dfmean = df.groupby(level=0).mean()
             dfstd = df.groupby(level=0).std()
+
             # plotting average
             if groupby == 'subject':
                 t = dfmean.TrialNumber  # adding 6 to trial number because of the 6 training trials
 
                 sns.set_context('talk')
                 fig, ax = plt.subplots(1, 2, figsize=(12, 4),
-                                       sharex='all')
+                                       sharex='all', sharey='all')
                 # breakpoint()
                 fb_target_mean = dfmean.TargetFeedback
                 fb_target_std = dfstd.TargetFeedback / np.sqrt(24)
-                fb_colour_mean = dfmean.ColourFeedback
-                fb_colour_std = dfstd.ColourFeedback / np.sqrt(24)
-                fb_both_mean = dfmean.BothFeedback
-                fb_both_std = dfstd.BothFeedback / np.sqrt(24)
+                # fb_colour_mean = dfmean.ColourFeedback
+                # fb_colour_std = dfstd.ColourFeedback / np.sqrt(24)
+                # fb_both_mean = dfmean.BothFeedback
+                # fb_both_std = dfstd.BothFeedback / np.sqrt(24)
 
                 ff_target_mean = dfmean.TargetFeedforward
                 ff_target_std = dfstd.TargetFeedforward / np.sqrt(24)
-                ff_colour_mean = dfmean.ColourFeedforward
-                ff_colour_std = dfstd.ColourFeedforward / np.sqrt(24)
-                ff_both_mean = dfmean.BothFeedforward
-                ff_both_std = dfstd.BothFeedforward / np.sqrt(24)
+                # ff_colour_mean = dfmean.ColourFeedforward
+                # ff_colour_std = dfstd.ColourFeedforward / np.sqrt(24)
+                # ff_both_mean = dfmean.BothFeedforward
+                # ff_both_std = dfstd.BothFeedforward / np.sqrt(24)
 
-                ax[0].plot(t, dfmean.TargetFeedback, 'b', t,
-                           dfmean.ColourFeedback, 'g', t, dfmean.BothFeedback,
-                           'r')
+                ax[0].plot(t, dfmean.TargetFeedback, 'b')#, t,
+                           # dfmean.ColourFeedback, 'g', t, dfmean.BothFeedback,
+                           # 'r')
                 ax[0].fill_between(t, fb_target_mean - fb_target_std,
                                    fb_target_mean + fb_target_std,
                                    color='b', alpha=0.2)
 
-                ax[0].fill_between(t, fb_colour_mean - fb_colour_std,
-                                   fb_colour_mean + fb_colour_std,
-                                   color='g', alpha=0.2)
-
-                ax[0].fill_between(t, fb_both_mean - fb_both_std,
-                                   fb_both_mean + fb_both_std,
-                                   color='r', alpha=0.2)
+                # ax[0].fill_between(t, fb_colour_mean - fb_colour_std,
+                #                    fb_colour_mean + fb_colour_std,
+                #                    color='g', alpha=0.2)
+                #
+                # ax[0].fill_between(t, fb_both_mean - fb_both_std,
+                #                    fb_both_mean + fb_both_std,
+                #                    color='r', alpha=0.2)
                 ax[0].set_title("Feedback info")
                 ax[0].set_xlabel("Trial number")
                 ax[0].set_ylabel("FB")
                 # ax[0].legend(['Target', 'Colour', 'Both'])
-                ax[0].set_ylim([0, 0.1])
-                ax[1].plot(t, dfmean.TargetFeedforward, 'b', t,
-                           dfmean.ColourFeedforward, 'g', t,
-                           dfmean.BothFeedforward, 'r')
+                # ax[0].set_ylim([0, 0.1])
+                ax[1].plot(t, dfmean.TargetFeedforward, 'b')#, t,
+                           # dfmean.ColourFeedforward, 'g', t,
+                           # dfmean.BothFeedforward, 'r')
                 ax[1].fill_between(t, ff_target_mean - ff_target_std,
                                    ff_target_mean + ff_target_std,
                                    color='b', alpha=0.2)
 
-                ax[1].fill_between(t, ff_colour_mean - ff_colour_std,
-                                   ff_colour_mean + ff_colour_std,
-                                   color='g', alpha=0.2)
-
-                ax[1].fill_between(t, ff_both_mean - ff_both_std,
-                                   ff_both_mean + ff_both_std,
-                                   color='r', alpha=0.2)
+                # ax[1].fill_between(t, ff_colour_mean - ff_colour_std,
+                #                    ff_colour_mean + ff_colour_std,
+                #                    color='g', alpha=0.2)
+                #
+                # ax[1].fill_between(t, ff_both_mean - ff_both_std,
+                #                    ff_both_mean + ff_both_std,
+                #                    color='r', alpha=0.2)
                 ax[1].set_title("Feedforward info")
                 ax[1].set_xlabel("Trial number")
                 ax[1].set_ylabel("FF")
@@ -135,12 +135,12 @@ def compute_info_transfer(path=None, filename=None, groupby='ff_fb'):
                 # plt.legend(['Target', 'Colour', 'Both'])
                 plt.tight_layout()
                 # plt.suptitle(f"Condition: {filename[-5:-4]}")
-                # plt.savefig(f"./figures/cond{filename[-5:-4]}")
+                # plt.savefig(f"./figures/only_ff/cond{filename[-5:-4]}")
 
             elif groupby == 'ff_fb':
                 sns.set_context('notebook')
                 fig, ax = plt.subplots(2, 3, figsize=(12, 6),
-                                       sharex='all')
+                                       sharex='all', sharey='row')
                 df2 = pd.DataFrame()
                 for cond in range(1, 7):
                     df_cond = df[df["Cond"]==cond]
@@ -180,7 +180,7 @@ def compute_info_transfer(path=None, filename=None, groupby='ff_fb'):
                                          rotation=45)
                 ax[1, 0].set_xticklabels(['ReinOFF-Low', 'ReinON-Low',
                                           'ReinOFF-Med', 'ReinON-Med',
-                                          'ReinOFF-High', 'ReinOFF-High'],
+                                          'ReinOFF-High', 'ReinON-High'],
                                          rotation=45)
 
                 plt.tight_layout()
@@ -265,7 +265,7 @@ def compute_info_transfer(path=None, filename=None, groupby='ff_fb'):
         return df
 
 
-VMD = 17
+VMD = 15
 if args.filename:
     compute_info_transfer(args.path, args.filename)
 else:
