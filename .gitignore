@@ -1,6 +1,6 @@
 .idea/poetry.lock
 data/
-output/
+output*/
 figures/
 preprocessed_data/
 all_preprocessed_data/
