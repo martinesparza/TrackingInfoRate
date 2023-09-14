@@ -57,7 +57,7 @@ def load_data(path, filename):
 
 
 # compute FB, FF and total info
-def compute_info_transfer(path=None, filename=None, groupby='subject'):
+def compute_info_transfer(path=None, filename=None, groupby=''):
     if filename is None:
         if (args.path):
             df = pd.DataFrame()
@@ -237,10 +237,7 @@ def compute_info_transfer(path=None, filename=None, groupby='subject'):
                                            'BothFeedback', 'BothFeedforward',
                                            'BothTotalInfo'])
 
-        pathlib.Path(PATHS.output_path / f"cond{filename[-5:-4]}").mkdir(
-            parents=True,
-            exist_ok=True)
-        df.to_csv(f"output/cond{filename[-5:-4]}/output_{filename}",
+        df.to_csv(f"output_81Y/output_{filename}",
                   index=False)
 
         # plotting

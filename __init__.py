@@ -10,5 +10,5 @@ from pathlib import Path
 @dataclass
 class PATHS:
     data_path: Path = './data'
-    preprocessed_data_path: Path = './preprocessed_data'
+    preprocessed_data_path: Path = 'preprocessed_data_81Y'
     output_path: Path = Path('./output')

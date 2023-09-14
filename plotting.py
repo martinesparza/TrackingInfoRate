@@ -16,7 +16,7 @@ def main():
     parser.add_argument("-v", "--variable", type=str, default=None)
     args = parser.parse_args()
 
-    files = glob.glob(f"{args.folder}/*/*.csv")
+    files = glob.glob(f"{args.folder}/*.csv")
     df = pd.DataFrame()
     for csv in files:
         # breakpoint()
@@ -195,7 +195,7 @@ def plot_info_transfer(df, cond=None, variable=None):
 
 
             plt.tight_layout()
-            plt.savefig(f"./figures/overlapped/test.png")
+            plt.savefig(f"./figures_81Y/overlapped/test.png")
         return
 
 

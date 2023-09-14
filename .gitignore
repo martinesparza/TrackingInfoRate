@@ -1,6 +1,5 @@
 .idea/poetry.lock
 data/
 output*/
-figures/
-preprocessed_data/
-all_preprocessed_data/
+preprocessed_data_81Y/
+figures*/

@@ -1,6 +1,6 @@
 warning('off')
 clear all
-disubj = dir('/data/data_83Y/83Y*');  % Set this to the data path
+disubj = dir('./preprocessed_data/83Y*');  % Set this to the data path
 conds = [];
 for subj = 1:length(disubj)
     di = dir(['/data/data_83Y/' disubj(subj).name filesep 'rml_FTT_*.mat']);
