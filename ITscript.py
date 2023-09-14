@@ -35,14 +35,19 @@ def interpolate_nans(y):
 
 
 # load data
-def load_data(path, filename):
+def load_data(path, filename, project='83Y'):
     csv = np.genfromtxt(path + filename, delimiter=",")
-    cursor = csv[1:418, 0:30]
-    colour = csv[1:418, 30:60]
-    target = csv[1:418, 60:90]
+    if project == '81Y':
+        cursor = csv[1:418, 0:30]
+        colour = csv[1:418, 30:60]
+        target = csv[1:418, 60:90]
+    else:
+        cursor = csv[1:418, 0:36]
+        colour = csv[1:418, 36:72]
+        target = csv[1:418, 72:108]
 
     # remove nans
-    allTrials = list(range(30))
+    allTrials = list(range(36))
     nanTrials = np.where(
         np.all(np.isnan(cursor), axis=0))  # trials with only nans
     cursor = np.delete(cursor, nanTrials, 1)
@@ -193,6 +198,7 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
         targetFB = []
         targetINFO = []
         order = [4, 3]
+
         for col in range(cursor.shape[1]):
             targetFB.append(
                 it.compute_FB([target[:, col]], cursor[:, col], order, VMD))
@@ -211,6 +217,7 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
                 it.compute_total_info([colour[:, col]], cursor[:, col], order,
                                       VMD))
         colourFF = np.array(colourINFO) - np.array(colourFB)
+
         # both cursor and colour
         bothFB = []
         bothINFO = []
@@ -237,7 +244,7 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
                                            'BothFeedback', 'BothFeedforward',
                                            'BothTotalInfo'])
 
-        df.to_csv(f"output_81Y/output_{filename}",
+        df.to_csv(f"output_83Y/output_{filename}",
                   index=False)
 
         # plotting

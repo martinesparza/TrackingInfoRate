@@ -34,16 +34,21 @@ def main():
             reinforcement = 'ON'
 
         if (condition == 1) or (condition == 4):
-            uncertainty = 'Low'
+            uncertainty = '20 Hz'
         elif (condition == 2) or (condition == 5):
-            uncertainty = 'Medium'
+            uncertainty = '80 Hz'
         elif (condition == 3) or (condition == 6):
-            uncertainty = 'High'
+            uncertainty = 'Sham'
 
         tmp_df = pd.read_csv(csv)
         tmp_df['Participant'] = participant
         tmp_df['Reinforcement'] = reinforcement
         tmp_df['Uncertainty'] = uncertainty
+        tmp_df['NormTargetFeedback'] = tmp_df['TargetFeedback'] / tmp_df[
+            'TargetFeedback'].iloc[:4].mean() * 100
+        tmp_df['NormTargetFeedforward'] = tmp_df['TargetFeedforward'] / tmp_df[
+                                                                      'TargetFeedforward'].iloc[
+                                                                  :4].mean() * 100
 
         df = pd.concat((df, tmp_df))
     # breakpoint()
@@ -123,38 +128,49 @@ def plot_info_transfer(df, cond=None, variable=None):
     else:
         dfs = []
         for rein in ['OFF', 'ON']:
-            for uncertainty in ['Low', 'Medium', 'High']:
+            for uncertainty in ['20 Hz', '80 Hz', 'Sham']:
                 df_tmp = df[(df['Reinforcement'] == rein)
                             & (df['Uncertainty'] == uncertainty)]
                 # breakpoint()
-                dfs.append(df_tmp[['TargetFeedback', 'TargetFeedforward']].groupby(level=0))
+                dfs.append(df_tmp[['NormTargetFeedback',
+                                   'NormTargetFeedforward']].groupby(
+                    level=0))
 
         # breakpoint()
         with plt.style.context('seaborn-v0_8-paper'):
             sns.set_context('talk')
             fig, ax = plt.subplots(3, 2, figsize=(12, 8),
                                    sharex='all', sharey='col')
-            for i, uncertainty in zip(range(3), ['Low', 'Medium', 'High']):
+            for i, uncertainty in zip(range(3), ['20 Hz', '80 Hz', 'Sham']):
                 ax[0,0].set_title('TargetFeedback')
                 ax[i, 0].plot(dfs[0].mean().index + 6,
-                              dfs[i]['TargetFeedback'].mean(), 'b')
+                              dfs[i]['NormTargetFeedback'].mean(), 'b')
                 ax[i, 0].plot(dfs[0].mean().index + 6,
-                              dfs[i + 3]['TargetFeedback'].mean(), 'r')
+                              dfs[i + 3]['NormTargetFeedback'].mean(), 'r')
 
-                ax[i, 0].fill_between(dfs[i]['TargetFeedback'].mean().index + 6,
-                                      dfs[i]['TargetFeedback'].mean() - (dfs[
-                    i]['TargetFeedback'].std() / np.sqrt(24)),
-                                      dfs[i]['TargetFeedback'].mean() + (
-                                          dfs[i]['TargetFeedback'].std() /
+                ax[i, 0].fill_between(dfs[i]['NormTargetFeedback'].mean(
+
+                ).index
+                                      + 6,
+                                      dfs[i]['NormTargetFeedback'].mean() - (
+                                              dfs[
+                    i]['NormTargetFeedback'].std() / np.sqrt(24)),
+                                      dfs[i]['NormTargetFeedback'].mean() + (
+                                          dfs[i]['NormTargetFeedback'].std() /
                                           np.sqrt(24)),
                                       color='b',
                                       alpha=0.2)
 
-                ax[i, 0].fill_between(dfs[i+3]['TargetFeedback'].mean().index + 6, dfs[i+3]['TargetFeedback'].mean() -
-                                      (dfs[0]['TargetFeedback'].std() /
+                ax[i, 0].fill_between(dfs[i+3]['NormTargetFeedback'].mean(
+
+                ).index +
+                                      6,
+                                      dfs[i+3]['NormTargetFeedback'].mean() -
+                                      (dfs[0]['NormTargetFeedback'].std() /
                                        np.sqrt(24)),
-                                      dfs[i+3]['TargetFeedback'].mean() + (
-                                          dfs[i+3]['TargetFeedback'].std() /
+                                      dfs[i+3]['NormTargetFeedback'].mean() + (
+                                          dfs[i+3][
+                                              'NormTargetFeedback'].std() /
                                           np.sqrt(24)),
                                       color='r',
                                       alpha=0.2)
@@ -163,39 +179,39 @@ def plot_info_transfer(df, cond=None, variable=None):
                 ax[i, 0].axvline(x=27, color='k', linestyle='--')
                 # ax[-1, 0].legend(['ReinOFF', 'ReinON'])
 
-            for i, uncertainty in zip(range(3), ['Low', 'Medium', 'High']):
+            for i, uncertainty in zip(range(3), ['20 Hz', '80 Hz', 'Sham']):
                 ax[0,1].set_title('TargetFeedforward')
                 ax[i, 1].plot(dfs[0].mean().index + 6,
-                              dfs[i]['TargetFeedforward'].mean(), 'b')
+                              dfs[i]['NormTargetFeedforward'].mean(), 'b')
                 ax[i, 1].plot(dfs[0].mean().index + 6,
-                              dfs[i + 3]['TargetFeedforward'].mean(), 'r')
+                              dfs[i + 3]['NormTargetFeedforward'].mean(), 'r')
 
-                ax[i, 1].fill_between(dfs[i]['TargetFeedforward'].mean().index + 6,
-                                      dfs[i]['TargetFeedforward'].mean() - (dfs[
-                    i]['TargetFeedforward'].std() / np.sqrt(24)),
-                                      dfs[i]['TargetFeedforward'].mean() + (
-                                          dfs[i]['TargetFeedforward'].std()
+                ax[i, 1].fill_between(dfs[i]['NormTargetFeedforward'].mean().index + 6,
+                                      dfs[i]['NormTargetFeedforward'].mean() - (dfs[
+                    i]['NormTargetFeedforward'].std() / np.sqrt(24)),
+                                      dfs[i]['NormTargetFeedforward'].mean() + (
+                                          dfs[i]['NormTargetFeedforward'].std()
                                           / np.sqrt(24)), color='b',
                                       alpha=0.2)
 
-                ax[i, 1].fill_between(dfs[i+3]['TargetFeedforward'].mean(
+                ax[i, 1].fill_between(dfs[i+3]['NormTargetFeedforward'].mean(
 
-                ).index + 6, dfs[i+3]['TargetFeedforward'].mean() -
-                                      (dfs[0]['TargetFeedforward'].std() /
+                ).index + 6, dfs[i+3]['NormTargetFeedforward'].mean() -
+                                      (dfs[0]['NormTargetFeedforward'].std() /
                                        np.sqrt(24)),
-                                      dfs[i+3]['TargetFeedforward'].mean() +
-                                      (dfs[i+3]['TargetFeedforward'].std() /
+                                      dfs[i+3]['NormTargetFeedforward'].mean() +
+                                      (dfs[i+3]['NormTargetFeedforward'].std() /
                                        np.sqrt(24)),
                                       color='r',
                                       alpha=0.2)
-                ax[i,1].set_ylabel(uncertainty)
+                ax[i, 1].set_ylabel(uncertainty)
                 ax[-1, 1].legend(['ReinOFF', 'ReinON'])
                 ax[i, 1].axvline(x=9, color='k', linestyle='--')
                 ax[i, 1].axvline(x=27, color='k', linestyle='--')
 
 
             plt.tight_layout()
-            plt.savefig(f"./figures_81Y/overlapped/test.png")
+            plt.savefig(f"./figures_83Y/overlapped/normalized.png")
         return
 
 
