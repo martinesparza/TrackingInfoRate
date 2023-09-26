@@ -14,12 +14,12 @@ def main():
     parser.add_argument("-f", "--folder", type=str, default='./')
     parser.add_argument("-c", "--cond", type=int, default=None)
     parser.add_argument("-v", "--variable", type=str, default=None)
+    parser.add_argument("-n", "--name", type=str, default="figure")
     args = parser.parse_args()
 
     files = glob.glob(f"{args.folder}/*.csv")
     df = pd.DataFrame()
     for csv in files:
-        # breakpoint()
         file_name = re.split('/', string=csv)[-1]
         if len(file_name) == 28:
             participant = int(file_name[10:11])
@@ -51,12 +51,12 @@ def main():
                                                                   :4].mean() * 100
 
         df = pd.concat((df, tmp_df))
-    # breakpoint()
-    plot_info_transfer(df, cond=args.cond, variable=args.variable)
+    plot_info_transfer(df, cond=args.cond, variable=args.variable,
+                       name=args.name)
     return
 
 
-def plot_info_transfer(df, cond=None, variable=None):
+def plot_info_transfer(df, cond=None, variable=None, name=None):
     if cond is not None:
         dfmean = df.groupby(level=0).mean()
         dfstd = df.groupby(level=0).std()
@@ -66,7 +66,6 @@ def plot_info_transfer(df, cond=None, variable=None):
             sns.set_context('talk')
             fig, ax = plt.subplots(1, 2, figsize=(12, 4),
                                    sharex='all')
-            # breakpoint()
             fb_target_mean = dfmean.TargetFeedback
             fb_target_std = dfstd.TargetFeedback / np.sqrt(24)
             # fb_colour_mean = dfmean.ColourFeedback
@@ -131,27 +130,24 @@ def plot_info_transfer(df, cond=None, variable=None):
             for uncertainty in ['20 Hz', '80 Hz', 'Sham']:
                 df_tmp = df[(df['Reinforcement'] == rein)
                             & (df['Uncertainty'] == uncertainty)]
-                # breakpoint()
                 dfs.append(df_tmp[['NormTargetFeedback',
                                    'NormTargetFeedforward']].groupby(
                     level=0))
 
-        # breakpoint()
         with plt.style.context('seaborn-v0_8-paper'):
             sns.set_context('talk')
             fig, ax = plt.subplots(3, 2, figsize=(12, 8),
                                    sharex='all', sharey='col')
             for i, uncertainty in zip(range(3), ['20 Hz', '80 Hz', 'Sham']):
                 ax[0,0].set_title('TargetFeedback')
-                ax[i, 0].plot(dfs[0].mean().index + 6,
+                ax[i, 0].plot(dfs[0].mean().index,
                               dfs[i]['NormTargetFeedback'].mean(), 'b')
-                ax[i, 0].plot(dfs[0].mean().index + 6,
+                ax[i, 0].plot(dfs[0].mean().index,
                               dfs[i + 3]['NormTargetFeedback'].mean(), 'r')
 
                 ax[i, 0].fill_between(dfs[i]['NormTargetFeedback'].mean(
 
-                ).index
-                                      + 6,
+                ).index,
                                       dfs[i]['NormTargetFeedback'].mean() - (
                                               dfs[
                     i]['NormTargetFeedback'].std() / np.sqrt(24)),
@@ -163,8 +159,7 @@ def plot_info_transfer(df, cond=None, variable=None):
 
                 ax[i, 0].fill_between(dfs[i+3]['NormTargetFeedback'].mean(
 
-                ).index +
-                                      6,
+                ).index,
                                       dfs[i+3]['NormTargetFeedback'].mean() -
                                       (dfs[0]['NormTargetFeedback'].std() /
                                        np.sqrt(24)),
@@ -175,18 +170,18 @@ def plot_info_transfer(df, cond=None, variable=None):
                                       color='r',
                                       alpha=0.2)
                 ax[i,0].set_ylabel(uncertainty)
-                ax[i, 0].axvline(x=9, color='k', linestyle='--')
-                ax[i, 0].axvline(x=27, color='k', linestyle='--')
+                ax[i, 0].axvline(x=4.5, color='k', linestyle='--')
+                ax[i, 0].axvline(x=8.5, color='k', linestyle='--')
                 # ax[-1, 0].legend(['ReinOFF', 'ReinON'])
 
             for i, uncertainty in zip(range(3), ['20 Hz', '80 Hz', 'Sham']):
                 ax[0,1].set_title('TargetFeedforward')
-                ax[i, 1].plot(dfs[0].mean().index + 6,
+                ax[i, 1].plot(dfs[0].mean().index,
                               dfs[i]['NormTargetFeedforward'].mean(), 'b')
-                ax[i, 1].plot(dfs[0].mean().index + 6,
+                ax[i, 1].plot(dfs[0].mean().index,
                               dfs[i + 3]['NormTargetFeedforward'].mean(), 'r')
 
-                ax[i, 1].fill_between(dfs[i]['NormTargetFeedforward'].mean().index + 6,
+                ax[i, 1].fill_between(dfs[i]['NormTargetFeedforward'].mean().index,
                                       dfs[i]['NormTargetFeedforward'].mean() - (dfs[
                     i]['NormTargetFeedforward'].std() / np.sqrt(24)),
                                       dfs[i]['NormTargetFeedforward'].mean() + (
@@ -196,7 +191,7 @@ def plot_info_transfer(df, cond=None, variable=None):
 
                 ax[i, 1].fill_between(dfs[i+3]['NormTargetFeedforward'].mean(
 
-                ).index + 6, dfs[i+3]['NormTargetFeedforward'].mean() -
+                ).index, dfs[i+3]['NormTargetFeedforward'].mean() -
                                       (dfs[0]['NormTargetFeedforward'].std() /
                                        np.sqrt(24)),
                                       dfs[i+3]['NormTargetFeedforward'].mean() +
@@ -206,12 +201,12 @@ def plot_info_transfer(df, cond=None, variable=None):
                                       alpha=0.2)
                 ax[i, 1].set_ylabel(uncertainty)
                 ax[-1, 1].legend(['ReinOFF', 'ReinON'])
-                ax[i, 1].axvline(x=9, color='k', linestyle='--')
-                ax[i, 1].axvline(x=27, color='k', linestyle='--')
+                ax[i, 1].axvline(x=4.5, color='k', linestyle='--')
+                ax[i, 1].axvline(x=8.5, color='k', linestyle='--')
 
 
             plt.tight_layout()
-            plt.savefig(f"./figures_83Y/overlapped/normalized.png")
+            plt.savefig(f"./figures_83Y/overlapped/{name}.png")
         return
 
 
