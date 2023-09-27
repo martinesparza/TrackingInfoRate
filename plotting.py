@@ -15,6 +15,7 @@ def main():
     parser.add_argument("-c", "--cond", type=int, default=None)
     parser.add_argument("-v", "--variable", type=str, default=None)
     parser.add_argument("-n", "--name", type=str, default="figure")
+    parser.add_argument("-p", "--plot", type=str, default="line_plot")
     args = parser.parse_args()
 
     files = glob.glob(f"{args.folder}/*.csv")
@@ -45,18 +46,62 @@ def main():
         tmp_df['Reinforcement'] = reinforcement
         tmp_df['Uncertainty'] = uncertainty
         tmp_df['NormTargetFeedback'] = tmp_df['TargetFeedback'] / tmp_df[
-            'TargetFeedback'].iloc[:4].mean() * 100
-        tmp_df['NormTargetFeedforward'] = tmp_df['TargetFeedforward'] / tmp_df[
-                                                                      'TargetFeedforward'].iloc[
+                                                                      'TargetFeedback'].iloc[
                                                                   :4].mean() * 100
+        tmp_df['NormTargetFeedforward'] = tmp_df['TargetFeedforward'] / tmp_df[
+                                                                            'TargetFeedforward'].iloc[
+                                                                        :4].mean() * 100
+        tmp_df['Condition'] = condition
 
         df = pd.concat((df, tmp_df))
-    plot_info_transfer(df, cond=args.cond, variable=args.variable,
-                       name=args.name)
+
+    if args.plot == 'line_plot':
+        line_plot(df, cond=args.cond, variable=args.variable,
+                  name=args.name)
+    elif args.plot == 'box_plot':
+        box_plot(df, name=args.name)
     return
 
 
-def plot_info_transfer(df, cond=None, variable=None, name=None):
+def box_plot(df, name):
+    df_train = df[(df.index).isin(np.arange(5, 29).tolist())]
+    df_post = df[(df.index).isin(np.arange(29, 36).tolist())]
+
+
+    with plt.style.context('seaborn-v0_8-paper'):
+        sns.set_context('talk')
+        fig, ax = plt.subplots(2, 2, figsize=(12, 12),
+                               sharex='all', sharey='row')
+        sns.boxplot(df_train,
+                    y="NormTargetFeedback", x="Condition",
+                    ax=ax[0, 0], order=[1, 4, 2, 5, 3, 6])
+        sns.boxplot(df_train,
+                    y="NormTargetFeedforward", x="Condition",
+                    ax=ax[1, 0], order=[1, 4, 2, 5, 3, 6])
+        ax[0,0].set_title('Training')
+
+        sns.boxplot(df_post,
+                    y="NormTargetFeedback", x="Condition",
+                    ax=ax[0, 1], order=[1, 4, 2, 5, 3, 6])
+        sns.boxplot(df_post,
+                    y="NormTargetFeedforward", x="Condition",
+                    ax=ax[1, 1], order=[1, 4, 2, 5, 3, 6])
+        ax[0, 1].set_title('Post-Training')
+
+        ax[1, 0].set_xticklabels(['ReinOFF-20Hz', 'ReinON-20Hz',
+                                  'ReinOFF-80Hz', 'ReinON-80Hz',
+                                  'ReinOFF-Sham', 'ReinOFF-Sham'],
+                                 rotation=45)
+        ax[1, 1].set_xticklabels(['ReinOFF-20Hz', 'ReinON-20Hz',
+                                  'ReinOFF-80Hz', 'ReinON-80Hz',
+                                  'ReinOFF-Sham', 'ReinOFF-Sham'],
+                                 rotation=45)
+        plt.tight_layout()
+        plt.savefig(f"./figures_83Y/boxplot/{name}.png")
+
+
+
+def line_plot(df, cond=None, variable=None, name=None):
     if cond is not None:
         dfmean = df.groupby(level=0).mean()
         dfstd = df.groupby(level=0).std()
@@ -139,7 +184,7 @@ def plot_info_transfer(df, cond=None, variable=None, name=None):
             fig, ax = plt.subplots(3, 2, figsize=(12, 8),
                                    sharex='all', sharey='col')
             for i, uncertainty in zip(range(3), ['20 Hz', '80 Hz', 'Sham']):
-                ax[0,0].set_title('TargetFeedback')
+                ax[0, 0].set_title('TargetFeedback')
                 ax[i, 0].plot(dfs[0].mean().index,
                               dfs[i]['NormTargetFeedback'].mean(), 'b')
                 ax[i, 0].plot(dfs[0].mean().index,
@@ -150,60 +195,68 @@ def plot_info_transfer(df, cond=None, variable=None, name=None):
                 ).index,
                                       dfs[i]['NormTargetFeedback'].mean() - (
                                               dfs[
-                    i]['NormTargetFeedback'].std() / np.sqrt(24)),
+                                                  i][
+                                                  'NormTargetFeedback'].std() / np.sqrt(
+                                          24)),
                                       dfs[i]['NormTargetFeedback'].mean() + (
-                                          dfs[i]['NormTargetFeedback'].std() /
-                                          np.sqrt(24)),
+                                              dfs[i][
+                                                  'NormTargetFeedback'].std() /
+                                              np.sqrt(24)),
                                       color='b',
                                       alpha=0.2)
 
-                ax[i, 0].fill_between(dfs[i+3]['NormTargetFeedback'].mean(
+                ax[i, 0].fill_between(dfs[i + 3]['NormTargetFeedback'].mean(
 
                 ).index,
-                                      dfs[i+3]['NormTargetFeedback'].mean() -
+                                      dfs[i + 3]['NormTargetFeedback'].mean() -
                                       (dfs[0]['NormTargetFeedback'].std() /
                                        np.sqrt(24)),
-                                      dfs[i+3]['NormTargetFeedback'].mean() + (
-                                          dfs[i+3][
-                                              'NormTargetFeedback'].std() /
-                                          np.sqrt(24)),
+                                      dfs[i + 3][
+                                          'NormTargetFeedback'].mean() + (
+                                              dfs[i + 3][
+                                                  'NormTargetFeedback'].std() /
+                                              np.sqrt(24)),
                                       color='r',
                                       alpha=0.2)
-                ax[i,0].set_ylabel(uncertainty)
+                ax[i, 0].set_ylabel(uncertainty)
                 ax[i, 0].axvline(x=4.5, color='k', linestyle='--')
-                ax[i, 0].axvline(x=8.5, color='k', linestyle='--')
+                ax[i, 0].axvline(x=28.5, color='k', linestyle='--')
                 # ax[-1, 0].legend(['ReinOFF', 'ReinON'])
 
             for i, uncertainty in zip(range(3), ['20 Hz', '80 Hz', 'Sham']):
-                ax[0,1].set_title('TargetFeedforward')
+                ax[0, 1].set_title('TargetFeedforward')
                 ax[i, 1].plot(dfs[0].mean().index,
                               dfs[i]['NormTargetFeedforward'].mean(), 'b')
                 ax[i, 1].plot(dfs[0].mean().index,
                               dfs[i + 3]['NormTargetFeedforward'].mean(), 'r')
 
-                ax[i, 1].fill_between(dfs[i]['NormTargetFeedforward'].mean().index,
-                                      dfs[i]['NormTargetFeedforward'].mean() - (dfs[
-                    i]['NormTargetFeedforward'].std() / np.sqrt(24)),
-                                      dfs[i]['NormTargetFeedforward'].mean() + (
-                                          dfs[i]['NormTargetFeedforward'].std()
-                                          / np.sqrt(24)), color='b',
-                                      alpha=0.2)
+                ax[i, 1].fill_between(
+                    dfs[i]['NormTargetFeedforward'].mean().index,
+                    dfs[i]['NormTargetFeedforward'].mean() - (dfs[
+                                                                  i][
+                                                                  'NormTargetFeedforward'].std() / np.sqrt(
+                        24)),
+                    dfs[i]['NormTargetFeedforward'].mean() + (
+                            dfs[i]['NormTargetFeedforward'].std()
+                            / np.sqrt(24)), color='b',
+                    alpha=0.2)
 
-                ax[i, 1].fill_between(dfs[i+3]['NormTargetFeedforward'].mean(
+                ax[i, 1].fill_between(dfs[i + 3]['NormTargetFeedforward'].mean(
 
-                ).index, dfs[i+3]['NormTargetFeedforward'].mean() -
+                ).index, dfs[i + 3]['NormTargetFeedforward'].mean() -
                                       (dfs[0]['NormTargetFeedforward'].std() /
                                        np.sqrt(24)),
-                                      dfs[i+3]['NormTargetFeedforward'].mean() +
-                                      (dfs[i+3]['NormTargetFeedforward'].std() /
+                                      dfs[i + 3][
+                                          'NormTargetFeedforward'].mean() +
+                                      (dfs[i + 3][
+                                           'NormTargetFeedforward'].std() /
                                        np.sqrt(24)),
                                       color='r',
                                       alpha=0.2)
                 ax[i, 1].set_ylabel(uncertainty)
                 ax[-1, 1].legend(['ReinOFF', 'ReinON'])
                 ax[i, 1].axvline(x=4.5, color='k', linestyle='--')
-                ax[i, 1].axvline(x=8.5, color='k', linestyle='--')
-
+                ax[i, 1].axvline(x=28.5, color='k', linestyle='--')
 
             plt.tight_layout()
             plt.savefig(f"./figures_83Y/overlapped/{name}.png")
