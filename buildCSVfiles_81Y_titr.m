@@ -3,7 +3,7 @@ clear all
 disubj = dir('/data/data_81Y/81*');  % Set this to the data path
 conds = [];
 for subj = 1:length(disubj)
-    di = dir(['/data/data_81Y/' disubj(subj).name filesep 'rml_FTT_B*.mat']);
+    di = dir(['/data/data_81Y/' disubj(subj).name filesep 'rml_FTT_t*.mat']);
     for file = 1:length(di)
         load(['/data/data_81Y/' disubj(subj).name filesep di(file).name]) % Set this to the data path
         clear colorFB
@@ -26,8 +26,8 @@ for subj = 1:length(disubj)
             end
             if ~isnan(reinforced)
                 colorFB = squeeze(all(Color_target_alltrials==colorOK,2));
-                T=table(CURSOR(1:420,:),colorFB(1:420,:),repmat(Seq_target(1:420),1,35),'VariableNames',{'cursor','colour','target'});
-                writetable(T,['/data/preprocessed_data_81Y/' disubj(subj).name '_block' num2str(block) '_cond' num2str(cond) '.csv'])
+                T=table(CURSOR(1:420,6:end),colorFB(1:420,6:end),repmat(Seq_target(1:420),1,30),'VariableNames',{'cursor','colour','target'});
+                writetable(T,['/data/preprocessed_data_81Y_titr/' disubj(subj).name '_block' num2str(block) '_cond' num2str(cond) '.csv'])
             end
         end
     end

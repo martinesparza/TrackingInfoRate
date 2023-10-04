@@ -35,12 +35,12 @@ def interpolate_nans(y):
 
 
 # load data
-def load_data(path, filename, project='83Y'):
+def load_data(path, filename, project='81Y'):
     csv = np.genfromtxt(path + filename, delimiter=",")
     if project == '81Y':
-        cursor = csv[1:418, 0:30]
-        colour = csv[1:418, 30:60]
-        target = csv[1:418, 60:90]
+        cursor = csv[1:418, 0:35]
+        colour = csv[1:418, 35:70]
+        target = csv[1:418, 70:105]
     else:
         cursor = csv[1:418, 0:36]
         colour = csv[1:418, 36:72]
@@ -243,8 +243,16 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
                                            'ColourTotalInfo',
                                            'BothFeedback', 'BothFeedforward',
                                            'BothTotalInfo'])
+        df['TrialNumber'] = df['TrialNumber'] + 1
 
-        df.to_csv(f"output_83Y/output_{filename}",
+        for trial in df.index[1:]:
+            if df.loc[trial]['TrialNumber'] - df.loc[trial-1]['TrialNumber'] != 1:
+                df.loc[trial+0.5] = [int(df.loc[trial]['TrialNumber']- 1),
+                                     np.nan, np.nan, np.nan, np.nan, np.nan,
+                                     np.nan, np.nan, np.nan, np.nan]
+        df = df.sort_index().reset_index(drop=True)
+        df['TrialNumber'] = df['TrialNumber'].astype('int')
+        df.to_csv(f"output_81Y/output_{filename}",
                   index=False)
 
         # plotting

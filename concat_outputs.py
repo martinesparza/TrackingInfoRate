@@ -5,13 +5,21 @@ import re
 import numpy as np
 from tqdm import tqdm
 import pandas as pd
+from plotting import Config81Y, Config83Y
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-n", "--name", type=str, default='concat.csv')
+parser.add_argument("-n", "--name", type=str,
+                    default='all_subjects_81Y.csv')
 parser.add_argument("-p", "--path", type=str, default='data/')
 args = parser.parse_args()
 
+
 def main(args):
+    if args.path[-3:] == '81Y':
+        config = Config81Y()
+    elif args.path[-3:] == '83Y':
+        config = Config83Y()
+
     files = glob.glob(f"{args.path}/output*.csv")
     df = pd.DataFrame()
     for file in tqdm(files):
@@ -33,27 +41,31 @@ def main(args):
             reinforcement = 'ON'
 
         if (condition == 1) or (condition == 4):
-            stim = '20 Hz'
+            condition_ = config.condition[1][0]  # 20 Hz
         elif (condition == 2) or (condition == 5):
-            stim = '80 Hz'
+            condition_ = config.condition[1][1]  # 80 Hz
         elif (condition == 3) or (condition == 6):
-            stim = 'Sham'
+            condition_ = config.condition[1][2]  # Sham
 
         df_['Participant'] = participant
         df_['Reinforcement'] = reinforcement
-        df_['Stimulation'] = stim
+        df_[f"{config.condition[0]}"] = condition_
         df_['Block'] = block
+
         df_['NormTargetFeedback'] = (df_['TargetFeedback'] /
-                                     df_['TargetFeedback'].iloc[:4].mean() *
+                                     df_['TargetFeedback'].iloc[
+                                     :config.norm_trials].mean() *
                                      100)
         df_['NormTargetFeedforward'] = (df_['TargetFeedforward'] /
                                         df_['TargetFeedforward'].iloc[
-                                        :4].mean() * 100)
+                                        :config.norm_trials].mean() * 100)
+        df_['NormTargetTotalInfo'] = (df_['TargetTotalInfo'] /
+                                      df_['TargetTotalInfo'].iloc[
+                                      :config.norm_trials].mean() * 100)
 
         df = pd.concat((df, df_))
 
     df.to_csv(f"{args.path}/{args.name}")
-
 
 
 if __name__ == '__main__':
