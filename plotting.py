@@ -16,11 +16,12 @@ warnings.filterwarnings("ignore")
 
 @dataclass
 class Config81Y:
-    n_trials: int = 30
-    norm_trials: int = 3
-    v_lines: tuple = (3.5, 21.5)
-    train_trials = np.arange(4, 22).tolist()
-    post_trials = np.arange(22, 30).tolist()
+    n_trials: int = 35
+    trials_to_plot: tuple = (6, 35)
+    norm_trials = np.arange(6, 9)
+    v_lines: tuple = (5.5, 8.5, 26.5)
+    train_trials = np.arange(9, 27).tolist()
+    post_trials = np.arange(27, 36).tolist()
     output_folder: str = 'figures_81Y'
     condition: tuple = ('Uncertainty', ['Low', 'Med', 'High'])
 
@@ -28,10 +29,11 @@ class Config81Y:
 @dataclass
 class Config83Y:
     n_trials: int = 36
-    norm_trials: int = 4
-    v_lines: tuple = (3.5, 21.5)
-    train_trials = np.arange(4, 28).tolist()
-    post_trials = np.arange(28, 36).tolist()
+    trials_to_plot: tuple = (1, 36)
+    norm_trials = np.arange(4)
+    v_lines: tuple = (4.5, 28.5)
+    train_trials = np.arange(5, 29).tolist()
+    post_trials = np.arange(29, 37).tolist()
     output_folder: str = 'figures_83Y'
     condition: tuple = ('Stimulation', ['20Hz', '80Hz', 'Sham'])
 
@@ -78,14 +80,13 @@ def main():
         tmp_df[f"{config.condition[0]}"] = condition_
         tmp_df['NormTargetFeedback'] = (tmp_df['TargetFeedback'] /
                                         tmp_df['TargetFeedback'].iloc[
-                                        :config.norm_trials].mean() * 100)
+                                        config.norm_trials].mean() * 100)
         tmp_df['NormTargetFeedforward'] = (tmp_df['TargetFeedforward'] /
                                            tmp_df['TargetFeedforward'].iloc[
-                                           :config.norm_trials].mean() * 100)
+                                           config.norm_trials].mean() * 100)
         tmp_df['NormTargetTotalInfo'] = (tmp_df['TargetTotalInfo'] /
                                          tmp_df['TargetTotalInfo'].iloc[
-                                         :config.norm_trials].mean() * 100)
-        tmp_df['Condition'] = condition
+                                         config.norm_trials].mean() * 100)
 
         df = pd.concat((df, tmp_df))
 
@@ -98,7 +99,6 @@ def main():
 
 
 def box_plot(df, config, name):
-    # breakpoint()
     df_train = df[(df['TrialNumber']).isin(config.train_trials)]
     df_post = df[(df['TrialNumber']).isin(config.post_trials)]
 
@@ -208,9 +208,11 @@ def line_plot(df, config, name, normalization):
                 color='r',
                 alpha=0.2)
             ax[i, 0].set_ylabel(condition_)
-            ax[i, 0].set_xlim([1, config.n_trials])
-            ax[i, 0].axvline(x=config.v_lines[0], color='k', linestyle='--')
-            ax[i, 0].axvline(x=config.v_lines[1], color='k', linestyle='--')
+            ax[i, 0].set_xlim([config.trials_to_plot[0],
+                               config.trials_to_plot[1]])
+            [ax[i, 0].axvline(x=pos, color='k',
+                              linestyle='--') for pos in config.v_lines]
+
             # ax[-1, 0].legend(['ReinOFF', 'ReinON'])
 
         for i, condition_ in zip(range(3), config.condition[1]):
@@ -239,8 +241,8 @@ def line_plot(df, config, name, normalization):
                 color='r',
                 alpha=0.2)
             ax[i, 1].set_ylabel(condition_)
-            ax[i, 1].axvline(x=config.v_lines[0], color='k', linestyle='--')
-            ax[i, 1].axvline(x=config.v_lines[1], color='k', linestyle='--')
+            [ax[i, 1].axvline(x=pos, color='k',
+                              linestyle='--') for pos in config.v_lines]
 
         for i, condition_ in zip(range(3), config.condition[1]):
             ax[0, 2].set_title(f'{var}TargetTotalInfo')
@@ -269,8 +271,8 @@ def line_plot(df, config, name, normalization):
                 alpha=0.2)
             ax[i, 2].set_ylabel(condition_)
             ax[-1, 2].legend(['ReinOFF', 'ReinON'])
-            ax[i, 2].axvline(x=config.v_lines[0], color='k', linestyle='--')
-            ax[i, 2].axvline(x=config.v_lines[1], color='k', linestyle='--')
+            [ax[i, 2].axvline(x=pos, color='k',
+                              linestyle='--') for pos in config.v_lines]
 
         plt.tight_layout()
         plt.savefig(f"./{config.output_folder}/line_plot/{name}")

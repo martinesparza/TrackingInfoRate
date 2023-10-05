@@ -9,7 +9,7 @@ from plotting import Config81Y, Config83Y
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--name", type=str,
-                    default='all_subjects_81Y.csv')
+                    default='all_subjects.csv')
 parser.add_argument("-p", "--path", type=str, default='data/')
 args = parser.parse_args()
 
@@ -54,14 +54,14 @@ def main(args):
 
         df_['NormTargetFeedback'] = (df_['TargetFeedback'] /
                                      df_['TargetFeedback'].iloc[
-                                     :config.norm_trials].mean() *
+                                     config.norm_trials].mean() *
                                      100)
         df_['NormTargetFeedforward'] = (df_['TargetFeedforward'] /
                                         df_['TargetFeedforward'].iloc[
-                                        :config.norm_trials].mean() * 100)
+                                        config.norm_trials].mean() * 100)
         df_['NormTargetTotalInfo'] = (df_['TargetTotalInfo'] /
                                       df_['TargetTotalInfo'].iloc[
-                                      :config.norm_trials].mean() * 100)
+                                      config.norm_trials].mean() * 100)
 
         df = pd.concat((df, df_))
 

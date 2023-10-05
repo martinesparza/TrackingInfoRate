@@ -35,19 +35,27 @@ def interpolate_nans(y):
 
 
 # load data
-def load_data(path, filename, project='81Y'):
+def load_data(path, filename, project='81Y_titr'):
     csv = np.genfromtxt(path + filename, delimiter=",")
     if project == '81Y':
         cursor = csv[1:418, 0:35]
         colour = csv[1:418, 35:70]
         target = csv[1:418, 70:105]
-    else:
+        allTrials = list(range(35))
+
+    elif project == '83Y':
         cursor = csv[1:418, 0:36]
         colour = csv[1:418, 36:72]
         target = csv[1:418, 72:108]
+        allTrials = list(range(36))
+
+    elif project == '81Y_titr':
+        cursor = csv[1:418, 0:42]
+        colour = csv[1:418, 42:84]
+        target = csv[1:418, 84:126]
+        allTrials = list(range(42))
 
     # remove nans
-    allTrials = list(range(36))
     nanTrials = np.where(
         np.all(np.isnan(cursor), axis=0))  # trials with only nans
     cursor = np.delete(cursor, nanTrials, 1)
@@ -69,11 +77,11 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
             directory = os.fsencode(args.path)
             for file in tqdm(os.listdir(directory)):
                 filename = os.fsdecode(file)
-                cond = int(filename[-5:-4])
+                # cond = int(filename[-5:-4])
                 if filename.endswith(".csv"):
                     new_df = compute_info_transfer(args.path, filename)
-                    new_df['Cond'] = cond * np.ones(len(new_df)).astype(
-                        'int32')
+                    # new_df['Cond'] = cond * np.ones(len(new_df)).astype(
+                    #     'int32')
                     df = pd.concat((df, new_df))
             dfmean = df.groupby(level=0).mean()
             dfstd = df.groupby(level=0).std()
@@ -100,9 +108,9 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
                 # ff_both_mean = dfmean.BothFeedforward
                 # ff_both_std = dfstd.BothFeedforward / np.sqrt(24)
 
-                ax[0].plot(t, dfmean.TargetFeedback, 'b')#, t,
-                           # dfmean.ColourFeedback, 'g', t, dfmean.BothFeedback,
-                           # 'r')
+                ax[0].plot(t, dfmean.TargetFeedback, 'b')  # , t,
+                # dfmean.ColourFeedback, 'g', t, dfmean.BothFeedback,
+                # 'r')
                 ax[0].fill_between(t, fb_target_mean - fb_target_std,
                                    fb_target_mean + fb_target_std,
                                    color='b', alpha=0.2)
@@ -119,9 +127,9 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
                 ax[0].set_ylabel("FB")
                 # ax[0].legend(['Target', 'Colour', 'Both'])
                 # ax[0].set_ylim([0, 0.1])
-                ax[1].plot(t, dfmean.TargetFeedforward, 'b')#, t,
-                           # dfmean.ColourFeedforward, 'g', t,
-                           # dfmean.BothFeedforward, 'r')
+                ax[1].plot(t, dfmean.TargetFeedforward, 'b')  # , t,
+                # dfmean.ColourFeedforward, 'g', t,
+                # dfmean.BothFeedforward, 'r')
                 ax[1].fill_between(t, ff_target_mean - ff_target_std,
                                    ff_target_mean + ff_target_std,
                                    color='b', alpha=0.2)
@@ -148,7 +156,7 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
                                        sharex='all', sharey='row')
                 df2 = pd.DataFrame()
                 for cond in range(1, 7):
-                    df_cond = df[df["Cond"]==cond]
+                    df_cond = df[df["Cond"] == cond]
                     df2 = pd.concat((df2, df_cond.groupby(level=0).mean()))
                 # breakpoint()
 
@@ -222,6 +230,7 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
         bothFB = []
         bothINFO = []
         order = [4, 0, 3]
+
         for col in range(cursor.shape[1]):
             bothFB.append(
                 it.compute_FB([target[:, col], colour[:, col]], cursor[:, col],
@@ -244,15 +253,21 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
                                            'BothFeedback', 'BothFeedforward',
                                            'BothTotalInfo'])
         df['TrialNumber'] = df['TrialNumber'] + 1
+        if int(df.iloc[-1]['TrialNumber']) != 42:
+            df.loc[len(df)] = [int(42),
+                               np.nan, np.nan, np.nan, np.nan, np.nan,
+                               np.nan, np.nan, np.nan, np.nan]
 
         for trial in df.index[1:]:
-            if df.loc[trial]['TrialNumber'] - df.loc[trial-1]['TrialNumber'] != 1:
-                df.loc[trial+0.5] = [int(df.loc[trial]['TrialNumber']- 1),
-                                     np.nan, np.nan, np.nan, np.nan, np.nan,
-                                     np.nan, np.nan, np.nan, np.nan]
+            if df.loc[trial]['TrialNumber'] - df.loc[trial - 1]['TrialNumber'] != 1:
+                df.loc[trial - 0.5] = [int(df.loc[trial]['TrialNumber'] - 1),
+                                       np.nan, np.nan, np.nan, np.nan, np.nan,
+                                       np.nan, np.nan, np.nan, np.nan]
+
+        # breakpoint()
         df = df.sort_index().reset_index(drop=True)
         df['TrialNumber'] = df['TrialNumber'].astype('int')
-        df.to_csv(f"output_81Y/output_{filename}",
+        df.to_csv(f"output_81Y_titr/output_{filename}",
                   index=False)
 
         # plotting

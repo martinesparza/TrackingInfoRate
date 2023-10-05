@@ -26,8 +26,9 @@ for subj = 1:length(disubj)
             end
             if ~isnan(reinforced)
                 colorFB = squeeze(all(Color_target_alltrials==colorOK,2));
-                T=table(CURSOR(1:420,6:end),colorFB(1:420,6:end),repmat(Seq_target(1:420),1,30),'VariableNames',{'cursor','colour','target'});
-                writetable(T,['/data/preprocessed_data_81Y_titr/' disubj(subj).name '_block' num2str(block) '_cond' num2str(cond) '.csv'])
+                T=table(CURSOR(1:420,:),colorFB(1:420,:),repmat(Seq_target(1:420),1,42),'VariableNames',{'cursor','colour','target'});
+                % writetable(T,['/data/preprocessed_data_81Y_titr/' disubj(subj).name '_block' num2str(block) '.csv'])
+                save(['/home/esparza/repos/TrackingInfoRate/output_81Y_titr/output_' disubj(subj).name '_block' num2str(block) '_conditions.mat'], "noise_reinf_type_alltrials")
             end
         end
     end

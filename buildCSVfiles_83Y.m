@@ -4,7 +4,7 @@ disubj = dir('/data/data_83Y/83Y*');  % Set this to the data path
 load('/data/data_83Y/Cond_pourMartin.mat') % Load condition matrix
 
 for subj = 1:length(disubj)
-    di = dir(['/data/data_83Y/' disubj(subj).name filesep 'rml_FTT_*.mat']);
+    di = dir(['/data/data_83Y/' disubj(subj).name filesep 'rml_FTT_MRI_*.mat']);
     for file = 1:length(di)
         load(['/data/data_83Y/' disubj(subj).name filesep di(file).name]) % Set this to the data path
         if length(disubj(subj).name) == 5
