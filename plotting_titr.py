@@ -56,7 +56,8 @@ def main():
     parser.add_argument("-f", "--folder", type=str, default='./')
     parser.add_argument("-n", "--name", type=str, default="figure.png")
     parser.add_argument("-p", "--plot", type=str, default="line_plot")
-    parser.add_argument('-norm', '--normalization', type=bool, default=False)
+    parser.add_argument("-s", "--save", type=bool, default=False)
+
     args = parser.parse_args()
 
     if args.folder[-3:] == '81Y':
@@ -112,9 +113,11 @@ def main():
 
         df = pd.concat((df, tmp_df))
 
-    if args.plot == 'line_plot':
-        uncertainty_plot(df, name=args.name, config=config,
-                         normalization=args.normalization)
+    if args.save:
+        df.to_csv(f"{args.folder}/all_subjects.csv")
+
+    if args.plot == 'uncertainty_plot':
+        uncertainty_plot(df, name=args.name, config=config)
     elif args.plot == 'pre_post':
         pre_post(df, name=args.name, config=config)
     return
@@ -125,64 +128,82 @@ def pre_post(df, config, name):
     df_post = df[(df['TrialNumber']).isin([40, 41, 42])]
 
     # Train
-    # breakpoint()
     df_pre = df_pre[['TargetFeedback', 'TargetFeedforward',
                      'TargetTotalInfo',
-                     'Participant']].groupby(['Participant']).mean()
+                     'Participant', 'Block']].groupby(['Participant',
+                                                       'Block']).mean()
     df_pre = df_pre.reset_index()
     df_pre['Trials'] = 'Pre'
     df_post = df_post[['TargetFeedback', 'TargetFeedforward',
                        'TargetTotalInfo',
-                       'Participant']].groupby('Participant').mean()
+                       'Participant', 'Block']].groupby(['Participant',
+                                                        'Block']).mean()
     df_post = df_post.reset_index()
     df_post['Trials'] = 'Post'
 
     df = pd.concat([df_pre, df_post])
+    # breakpoint()
 
     with plt.style.context('seaborn-v0_8-paper'):
+        sns.set_theme(style='whitegrid', palette="Paired")
         sns.set_context('talk')
-        fig, ax = plt.subplots(1, 3, figsize=(12, 12))
 
-        sns.boxplot(df,
-                    y="TargetFeedback", x="Trials",
-                    ax=ax[0])
-        sns.boxplot(df,
-                    y="TargetFeedforward", x="Trials",
-                    ax=ax[1])
-        sns.boxplot(df,
-                    y="TargetTotalInfo", x="Trials",
-                    ax=ax[2])
+        fig, ax = plt.subplots(3, 1, figsize=(12, 10), sharex='all')
+
+        sns.pointplot(df,
+                    y="TargetFeedback", x="Block", hue='Trials',
+                    ax=ax[0], palette='flare', errorbar='se', dodge=True,
+                      join=False)
+        ax[0].legend([])
+        ax[0].set_xlabel('')
+        sns.pointplot(df,
+                    y="TargetFeedforward", x="Block", hue='Trials',
+                    ax=ax[1], palette='flare', errorbar='se', dodge=True,
+                      join=False)
+        ax[1].legend([])
+        ax[1].set_xlabel('')
+        sns.pointplot(df,
+                    y="TargetTotalInfo", x="Block", hue='Trials',
+                    ax=ax[2], palette='flare', errorbar='se', dodge=True,
+                      join=False)
         # ax[0, 0].set_title('Training')
-        plt.savefig(f"./{config.output_folder}/boxplot/{name}")
+
+        plt.tight_layout()
+    plt.savefig(f"./{config.output_folder}/{name}")
 
 
 def uncertainty_plot(df, config, name):
     df = df[(df['TrialNumber']).isin(np.arange(4, 39).tolist())]
 
     # Train
-    df_pre = df[['TargetFeedback', 'TargetFeedforward',
+    df = df[['TargetFeedback', 'TargetFeedforward',
                  'TargetTotalInfo',
-                 'Participant', 'Uncertainty']].groupby(['Participant']).mean()
-    df_pre = df_pre.reset_index()
-    # breakpoint()
-
-
+                 'Participant', 'Uncertainty', 'Reinforcement']].groupby(
+        ['Participant', 'Uncertainty', 'Reinforcement']).mean()
+    df = df.reset_index()
 
     with plt.style.context('seaborn-v0_8-paper'):
+        sns.set_theme(style='whitegrid',palette="Paired")
         sns.set_context('talk')
-        fig, ax = plt.subplots(1, 3, figsize=(12, 12))
+        fig, ax = plt.subplots(3,1, figsize=(20, 10),
+                               sharex='all')
 
-        sns.boxplot(df,
-                    y="TargetFeedback", x="Trials",
-                    ax=ax[0])
-        sns.boxplot(df,
-                    y="TargetFeedforward", x="Trials",
-                    ax=ax[1])
-        sns.boxplot(df,
-                    y="TargetTotalInfo", x="Trials",
-                    ax=ax[2])
-        # ax[0, 0].set_title('Training')
-        plt.savefig(f"./{config.output_folder}/boxplot/{name}")
+        sns.pointplot(df,
+                    y="TargetFeedback", x="Uncertainty", hue='Reinforcement',
+                    ax=ax[0], errorbar='se')
+        ax[0].legend([])
+        ax[0].set_xlabel('')
+
+        sns.pointplot(df,
+                    y="TargetFeedforward", x="Uncertainty", hue='Reinforcement',
+                    ax=ax[1], errorbar='se')
+        ax[1].legend([])
+        ax[1].set_xlabel('')
+
+        sns.pointplot(df,
+                    y="TargetTotalInfo", x="Uncertainty", hue='Reinforcement',
+                    ax=ax[2], errorbar='se')
+        plt.savefig(f"./{config.output_folder}/{name}")
         return
 
 
