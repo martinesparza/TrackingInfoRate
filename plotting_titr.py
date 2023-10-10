@@ -119,22 +119,28 @@ def main():
     if args.plot == 'uncertainty_plot':
         uncertainty_plot(df, name=args.name, config=config)
     elif args.plot == 'pre_post':
-        pre_post(df, name=args.name, config=config)
+        pre_post(df, name=args.name, config=config, args=args)
     return
 
 
-def pre_post(df, config, name):
-    df_pre = df[(df['TrialNumber']).isin([1, 2, 3])]
-    df_post = df[(df['TrialNumber']).isin([40, 41, 42])]
+def pre_post(df, config, name, args):
+    df_pre_ = df[(df['TrialNumber']).isin([1, 2, 3])]
+    df_post_ = df[(df['TrialNumber']).isin([40, 41, 42])]
+    df_pre_['Trials'] = 'Pre'
+    df_post_['Trials'] = 'Post'
+    df_tosave = pd.concat([df_pre_, df_post_])
+
+    if args.save:
+        df_tosave.to_csv(f"{args.folder}/all_subjects_pre_post_analysis.csv")
 
     # Train
-    df_pre = df_pre[['TargetFeedback', 'TargetFeedforward',
+    df_pre = df_pre_[['TargetFeedback', 'TargetFeedforward',
                      'TargetTotalInfo',
                      'Participant', 'Block']].groupby(['Participant',
                                                        'Block']).mean()
     df_pre = df_pre.reset_index()
     df_pre['Trials'] = 'Pre'
-    df_post = df_post[['TargetFeedback', 'TargetFeedforward',
+    df_post = df_post_[['TargetFeedback', 'TargetFeedforward',
                        'TargetTotalInfo',
                        'Participant', 'Block']].groupby(['Participant',
                                                         'Block']).mean()
@@ -142,7 +148,7 @@ def pre_post(df, config, name):
     df_post['Trials'] = 'Post'
 
     df = pd.concat([df_pre, df_post])
-    # breakpoint()
+
 
     with plt.style.context('seaborn-v0_8-paper'):
         sns.set_theme(style='whitegrid', palette="Paired")
