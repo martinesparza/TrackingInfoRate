@@ -91,15 +91,27 @@ def main():
         tmp_df['Condition'] = condition
 
         df = pd.concat((df, tmp_df))
+
+    colors = [(255, 182, 193),  # Cond 1
+              (69, 249, 73),  # Cond 4
+              (255, 0, 0),
+              (5, 137, 8),
+              (255, 0, 255),
+              (0, 255, 127)
+              ]
+
+    colors_ = []
+    [colors_.append('#%02x%02x%02x' % c) for c in colors]
+
     if args.plot == 'line_plot':
         line_plot(df, name=args.name, config=config,
-                  normalization=args.normalization)
+                  normalization=args.normalization, colors=colors_)
     elif args.plot == 'point_plot':
-        point_plot(df, name=args.name, config=config)
+        point_plot(df, name=args.name, config=config, colors=colors_)
     return
 
 
-def point_plot(df, config, name):
+def point_plot(df, config, name, colors):
     df_train = df[(df['TrialNumber']).isin(config.train_trials)]
     df_post = df[(df['TrialNumber']).isin(config.post_trials)]
 
@@ -117,16 +129,7 @@ def point_plot(df, config, name):
     df_post = df_post.reset_index()
 
     # breakpoint()
-    colors = [(255, 182, 193),  # Cond 1
-              (69, 249, 73),  # Cond 4
-              (255, 0, 0),
-              (5, 137, 8),
-              (255, 0, 255),
-              (0, 255, 127)
-              ]
 
-    colors_ = []
-    [colors_.append('#%02x%02x%02x' % c) for c in colors]
 
     with plt.style.context('seaborn-v0_8-paper'):
         sns.set_theme(style='whitegrid')
@@ -137,29 +140,29 @@ def point_plot(df, config, name):
         sns.pointplot(df_train,
                       y="NormTargetFeedback", x="Condition",
                       ax=ax[0, 0], order=[1, 4, 2, 5, 3, 6],
-                      errorbar='se', join=False, palette=colors_)
+                      errorbar='se', join=False, palette=colors)
         sns.pointplot(df_train,
                       y="NormTargetFeedforward", x="Condition",
                       ax=ax[1, 0], order=[1, 4, 2, 5, 3, 6],
-                      errorbar='se', join=False, palette=colors_)
+                      errorbar='se', join=False, palette=colors)
         sns.pointplot(df_train,
                       y="NormTargetTotalInfo", x="Condition",
                       ax=ax[2, 0], order=[1, 4, 2, 5, 3, 6],
-                      errorbar='se', join=False, palette=colors_)
+                      errorbar='se', join=False, palette=colors)
         ax[0, 0].set_title('Training')
 
         sns.pointplot(df_post,
                       y="NormTargetFeedback", x="Condition",
                       ax=ax[0, 1], order=[1, 4, 2, 5, 3, 6],
-                      errorbar='se', join=False, palette=colors_)
+                      errorbar='se', join=False, palette=colors)
         sns.pointplot(df_post,
                       y="NormTargetFeedforward", x="Condition",
                       ax=ax[1, 1], order=[1, 4, 2, 5, 3, 6],
-                      errorbar='se', join=False, palette=colors_)
+                      errorbar='se', join=False, palette=colors)
         sns.pointplot(df_post,
                       y="NormTargetTotalInfo", x="Condition",
                       ax=ax[2, 1], order=[1, 4, 2, 5, 3, 6],
-                      errorbar='se', join=False, palette=colors_)
+                      errorbar='se', join=False, palette=colors)
         ax[0, 1].set_title('Post-Training')
 
         ax[2, 0].set_xticklabels([f"ReinOFF-{config.condition[1][0]}",
@@ -180,31 +183,25 @@ def point_plot(df, config, name):
         plt.savefig(f"./{config.output_folder}/boxplot/{name}")
 
 
-def line_plot(df, config, name, normalization):
+def line_plot(df, config, name, normalization, colors):
     if normalization:
         var = 'Norm'
     else:
         var = ''
 
-    df = df[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
-             f'{var}TargetTotalInfo',
-             f'{var}Reinforcement', 'TrialNumber',
-             'Uncertainty']].groupby(
-        ['TrialNumber', 'Uncertainty', 'Reinforcement']).mean()
-    df = df.reset_index()
-
+    # General plots
     with plt.style.context('seaborn-v0_8-paper'):
         sns.set_theme(style='whitegrid', palette=['r', 'g'])
         sns.set_context('talk')
         fig, axes = plt.subplots(3, 1, figsize=(15, 10),
                                  sharex='all')
-
-        # for ax in axes:
-
-        df_mean = df.loc[:, df.columns != 'Uncertainty'].groupby([
+        df_mean = df[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
+        f'{var}TargetTotalInfo', 'Reinforcement', 'TrialNumber']].groupby([
             'TrialNumber', 'Reinforcement']).mean()
         df_mean = df_mean.reset_index()
-        df_sem = df.loc[:, df.columns != 'Uncertainty'].groupby([
+
+        df_sem = df[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
+        f'{var}TargetTotalInfo', 'Reinforcement', 'TrialNumber']].groupby([
             'TrialNumber', 'Reinforcement']).sem()
         df_sem = df_sem.reset_index()
 
@@ -213,17 +210,17 @@ def line_plot(df, config, name, normalization):
             for rein in ['OFF', 'ON']:
                 ax.plot(np.arange(1, config.n_trials + 1),
                         df_mean[df_mean['Reinforcement'] == rein][
-                            f'{var}{f}'],
+                            f'{f}'],
                         label=rein)
                 ax.fill_between(np.arange(1, config.n_trials + 1),
                                 df_mean[df_mean['Reinforcement'] == rein][
-                                    f'{var}{f}'] -
+                                    f'{f}'] -
                                 df_sem[df_sem['Reinforcement'] == rein][
-                                    f'{var}{f}'],
+                                    f'{f}'],
                                 df_mean[df_mean['Reinforcement'] == rein][
-                                    f'{var}{f}'] +
+                                    f'{f}'] +
                                 df_sem[df_sem['Reinforcement'] == rein][
-                                    f'{var}{f}'],
+                                    f'{f}'],
                                 alpha=0.2
                                 )
             ax.set_ylabel(f"{f}")
@@ -240,115 +237,81 @@ def line_plot(df, config, name, normalization):
         axes[-1].set_xlim([1, config.n_trials])
         axes[-1].legend()
 
-        # dfs = []
-        # for rein in ['OFF', 'ON']:
-        #     for condition_ in config.condition[1]:
-        #         df_tmp = df[(df['Reinforcement'] == rein)
-        #                     & (df[f"{config.condition[0]}"] == condition_)]
-        #         dfs.append(df_tmp[[f'{var}TargetFeedback',
-        #                            f'{var}TargetFeedforward',
-        #                            f'{var}TargetTotalInfo']].groupby(
-        #             level=0))
-        # with plt.style.context('seaborn-v0_8-paper'):
-        #     sns.set_context('talk')
-        #     fig, ax = plt.subplots(3, 3, figsize=(16, 8),
-        #                            sharex='all', sharey='col')
-        #     for i, condition_ in zip(range(3), config.condition[1]):
-        #         ax[0, 0].set_title(f'{var}TargetFeedback')
-        #         ax[i, 0].plot(dfs[0].mean().index + 1,
-        #                       dfs[i][f'{var}TargetFeedback'].mean(), 'b')
-        #         ax[i, 0].plot(dfs[0].mean().index + 1,
-        #                       dfs[i + 3][f'{var}TargetFeedback'].mean(), 'r')
-        #
-        #         ax[i, 0].fill_between(
-        #             dfs[i][f'{var}TargetFeedback'].mean().index + 1,
-        #             dfs[i][f'{var}TargetFeedback'].mean() -
-        #             (dfs[i][f'{var}TargetFeedback'].std() / np.sqrt(24)),
-        #             dfs[i][f'{var}TargetFeedback'].mean() +
-        #             (dfs[i][f'{var}TargetFeedback'].std() /
-        #              np.sqrt(24)),
-        #             color='b',
-        #             alpha=0.2)
-        #
-        #         ax[i, 0].fill_between(
-        #             dfs[i + 3][f'{var}TargetFeedback'].mean().index + 1,
-        #             dfs[i + 3][f'{var}TargetFeedback'].mean() -
-        #             (dfs[0][f'{var}TargetFeedback'].std() / np.sqrt(24)),
-        #             dfs[i + 3][f'{var}TargetFeedback'].mean() +
-        #             (dfs[i + 3][f'{var}TargetFeedback'].std() /
-        #              np.sqrt(24)),
-        #             color='r',
-        #             alpha=0.2)
-        #         ax[i, 0].set_ylabel(condition_)
-        #         ax[i, 0].set_xlim([config.trials_to_plot[0],
-        #                            config.trials_to_plot[1]])
-        #         [ax[i, 0].axvline(x=pos, color='k',
-        #                           linestyle='--') for pos in config.v_lines]
-        #
-        #         # ax[-1, 0].legend(['ReinOFF', 'ReinON'])
-        #
-        #     for i, condition_ in zip(range(3), config.condition[1]):
-        #         ax[0, 1].set_title(f'{var}TargetFeedforward')
-        #         ax[i, 1].plot(dfs[0].mean().index + 1,
-        #                       dfs[i][f'{var}TargetFeedforward'].mean(), 'b')
-        #         ax[i, 1].plot(dfs[0].mean().index + 1,
-        #                       dfs[i + 3][f'{var}TargetFeedforward'].mean(), 'r')
-        #
-        #         ax[i, 1].fill_between(
-        #             dfs[i][f'{var}TargetFeedforward'].mean().index + 1,
-        #             dfs[i][f'{var}TargetFeedforward'].mean() -
-        #             (dfs[i][f'{var}TargetFeedforward'].std() / np.sqrt(24)),
-        #             dfs[i][f'{var}TargetFeedforward'].mean() + (
-        #                     dfs[i][f'{var}TargetFeedforward'].std()
-        #                     / np.sqrt(24)), color='b',
-        #             alpha=0.2)
-        #
-        #         ax[i, 1].fill_between(
-        #             dfs[i + 3][f'{var}TargetFeedforward'].mean().index + 1,
-        #             dfs[i + 3][f'{var}TargetFeedforward'].mean() -
-        #             (dfs[0][f'{var}TargetFeedforward'].std() / np.sqrt(24)),
-        #             dfs[i + 3][f'{var}TargetFeedforward'].mean() +
-        #             (dfs[i + 3][f'{var}TargetFeedforward'].std() /
-        #              np.sqrt(24)),
-        #             color='r',
-        #             alpha=0.2)
-        #         ax[i, 1].set_ylabel(condition_)
-        #         [ax[i, 1].axvline(x=pos, color='k',
-        #                           linestyle='--') for pos in config.v_lines]
-        #
-        #     for i, condition_ in zip(range(3), config.condition[1]):
-        #         ax[0, 2].set_title(f'{var}TargetTotalInfo')
-        #         ax[i, 2].plot(dfs[0].mean().index + 1,
-        #                       dfs[i][f'{var}TargetTotalInfo'].mean(), 'b')
-        #         ax[i, 2].plot(dfs[0].mean().index + 1,
-        #                       dfs[i + 3][f'{var}TargetTotalInfo'].mean(), 'r')
-        #
-        #         ax[i, 2].fill_between(
-        #             dfs[i][f'{var}TargetTotalInfo'].mean().index + 1,
-        #             dfs[i][f'{var}TargetTotalInfo'].mean() -
-        #             (dfs[i][f'{var}TargetTotalInfo'].std() / np.sqrt(24)),
-        #             dfs[i][f'{var}TargetTotalInfo'].mean() +
-        #             (dfs[i][f'{var}TargetTotalInfo'].std() / np.sqrt(24)),
-        #             color='b',
-        #             alpha=0.2)
-        #
-        #         ax[i, 2].fill_between(
-        #             dfs[i + 3][f'{var}TargetTotalInfo'].mean().index + 1,
-        #             dfs[i + 3][f'{var}TargetTotalInfo'].mean() -
-        #             (dfs[0][f'{var}TargetTotalInfo'].std() / np.sqrt(24)),
-        #             dfs[i + 3][f'{var}TargetTotalInfo'].mean() +
-        #             (dfs[i + 3][f'{var}TargetTotalInfo'].std() /
-        #              np.sqrt(24)),
-        #             color='r',
-        #             alpha=0.2)
-        #         ax[i, 2].set_ylabel(condition_)
-        #         ax[-1, 2].legend(['ReinOFF', 'ReinON'])
-        #         [ax[i, 2].axvline(x=pos, color='k',
-        #                           linestyle='--') for pos in config.v_lines]
+        plt.tight_layout()
+        plt.savefig(f"./{config.output_folder}/line_plot/OFF_ON.png")
+
+    # Uncertainty plots
+    with plt.style.context('seaborn-v0_8-paper'):
+        sns.set_theme(style='whitegrid', palette=['r', 'g'])
+        sns.set_context('talk')
+        fig, axes = plt.subplots(3, 2, figsize=(15, 10),
+                                 sharex='all', sharey='col')
+
+        df_mean = df[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
+                      f'{var}TargetTotalInfo', 'Reinforcement',
+                      'TrialNumber', 'Uncertainty']].groupby([
+            'TrialNumber', 'Reinforcement', 'Uncertainty']).mean()
+        df_mean = df_mean.reset_index()
+
+        df_sem = df[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
+                     f'{var}TargetTotalInfo', 'Reinforcement',
+                     'TrialNumber', 'Uncertainty']].groupby([
+            'TrialNumber', 'Reinforcement', 'Uncertainty']).sem()
+        df_sem = df_sem.reset_index()
+        # breakpoint()
+
+        for f, idx in zip(df_mean.columns[3:5], [0, 1]):
+            ax_ = axes[:, idx]
+            color_counter = 0
+            for ax, uncer in zip(ax_, ['Low', 'Med', 'High']):
+                for rein in ['OFF', 'ON']:
+                    # breakpoint()
+                    ax.plot(np.arange(1, config.n_trials + 1),
+                            df_mean[(df_mean['Reinforcement'] == rein)
+                               & (df_mean['Uncertainty'] == uncer)][
+                                f'{f}'],
+                            label=rein,
+                            color=colors[color_counter])
+
+                    ax.fill_between(np.arange(1, config.n_trials + 1),
+                                    df_mean[(df_mean['Reinforcement'] == rein)
+                                            & (df_mean[
+                                                   'Uncertainty'] == uncer)][
+                                        f'{f}'] -
+                                    df_sem[(df_sem['Reinforcement'] == rein)
+                                           & (df_sem['Uncertainty'] == uncer)][
+                                        f'{f}'],
+                                    df_mean[(df_mean['Reinforcement'] == rein)
+                                            & (df_mean[
+                                                   'Uncertainty'] == uncer)][
+                                        f'{f}'] +
+                                    df_sem[(df_sem['Reinforcement'] == rein)
+                                           & (df_sem['Uncertainty'] == uncer)][
+                                        f'{f}'],
+                                    alpha=0.2,
+                                    color=colors[color_counter]
+                                    )
+                    color_counter = color_counter + 1
+
+                ax.set_ylabel(f"{uncer}")
+                [ax.axvline(x=pos, color='k', linestyle='--') for pos in
+                 config.v_lines]
+                # r = matplotlib.patches.Rectangle((config.v_lines[0], 0),
+                #                                  config.v_lines[1] -
+                #                                  config.v_lines[0],
+                #                                  5,
+                #                                  color='gray',
+                #                                  alpha=0.2)
+                # ax.add_patch(r)
+        axes[-1, -1].set_xlim([1, config.n_trials])
+        axes[-1, -1].legend()
+        axes[0,0].set_title('TargetFeedback')
+        axes[0,1].set_title('TargetFeedforward')
 
         plt.tight_layout()
-        plt.savefig(f"./{config.output_folder}/line_plot/{name}")
-        return
+        plt.savefig(f"./{config.output_folder}/line_plot/test.png")
+
+    return
 
 
 if __name__ == '__main__':

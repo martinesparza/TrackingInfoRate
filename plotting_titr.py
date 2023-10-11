@@ -151,26 +151,26 @@ def pre_post(df, config, name, args):
 
 
     with plt.style.context('seaborn-v0_8-paper'):
-        sns.set_theme(style='whitegrid', palette="Paired")
+        sns.set_theme(style='whitegrid')
         sns.set_context('talk')
 
         fig, ax = plt.subplots(3, 1, figsize=(12, 10), sharex='all')
 
         sns.pointplot(df,
                     y="TargetFeedback", x="Block", hue='Trials',
-                    ax=ax[0], palette='flare', errorbar='se', dodge=True,
+                    ax=ax[0], palette='gray', errorbar='se', dodge=0.2,
                       join=False)
         ax[0].legend([])
         ax[0].set_xlabel('')
         sns.pointplot(df,
                     y="TargetFeedforward", x="Block", hue='Trials',
-                    ax=ax[1], palette='flare', errorbar='se', dodge=True,
+                    ax=ax[1], palette='gray', errorbar='se', dodge=0.2,
                       join=False)
         ax[1].legend([])
         ax[1].set_xlabel('')
         sns.pointplot(df,
                     y="TargetTotalInfo", x="Block", hue='Trials',
-                    ax=ax[2], palette='flare', errorbar='se', dodge=True,
+                    ax=ax[2], palette='gray', errorbar='se', dodge=0.2,
                       join=False)
         # ax[0, 0].set_title('Training')
 
@@ -189,7 +189,7 @@ def uncertainty_plot(df, config, name):
     df = df.reset_index()
 
     with plt.style.context('seaborn-v0_8-paper'):
-        sns.set_theme(style='whitegrid',palette="Paired")
+        sns.set_theme(style='whitegrid',palette=["r", "g"])
         sns.set_context('talk')
         fig, ax = plt.subplots(3,1, figsize=(20, 10),
                                sharex='all')
