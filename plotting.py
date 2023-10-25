@@ -39,6 +39,18 @@ class Config83Y:
     condition: tuple = ('Stimulation', ['20Hz', '80Hz', 'Sham'])
 
 
+@dataclass
+class ConfigEMG:
+    n_trials: int = 29
+    trials_to_plot: tuple = (1, 29)
+    norm_trials = np.arange(6, 9).tolist()
+    v_lines: tuple = (8.5, 28.5)
+    train_trials = np.arange(8, 26).tolist()
+    post_trials = np.arange(26, 30).tolist()
+    output_folder: str = 'figures_emg'
+    condition: tuple = ('Uncertainty', ['No', 'Visual', 'Tactile', 'Both'])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--folder", type=str, default='./')
@@ -51,29 +63,47 @@ def main():
         config = Config81Y()
     elif args.folder[-3:] == '83Y':
         config = Config83Y()
+    elif args.folder[-3:] == 'emg':
+        config = ConfigEMG
 
     files = glob.glob(f"{args.folder}/o*.csv")
     df = pd.DataFrame()
     for csv in files:
         file_name = re.split('/', string=csv)[-1]
-        if len(file_name) == 28:
-            participant = int(file_name[10:11])
+        if len(file_name) == 30:  # Change for emg
+            participant = int(file_name[12:13])
         else:
-            participant = int(file_name[10:12])
+            participant = int(file_name[12:14])
 
         # Wrap condition
         condition = int(file_name[-5:-4])
-        if condition < 4:
-            reinforcement = 'OFF'
-        else:
-            reinforcement = 'ON'
+        if args.folder[-3:] == 'emg':
+            if condition % 2 == 0:
+                reinforcement = 'ON'
+            else:
+                reinforcement = 'OFF'
 
-        if (condition == 1) or (condition == 4):
-            condition_ = config.condition[1][0]  # 20 Hz
-        elif (condition == 2) or (condition == 5):
-            condition_ = config.condition[1][1]  # 80 Hz
-        elif (condition == 3) or (condition == 6):
-            condition_ = config.condition[1][2]  # Sham
+            if (condition == 1) or (condition == 2):
+                condition_ = config.condition[1][0]
+            elif (condition == 3) or (condition == 4):
+                condition_ = config.condition[1][1]
+            elif (condition == 5) or (condition == 6):
+                condition_ = config.condition[1][2]
+            elif (condition == 7) or (condition == 8):
+                condition_ = config.condition[1][3]
+
+        else:
+            if condition < 4:
+                reinforcement = 'OFF'
+            else:
+                reinforcement = 'ON'
+
+            if (condition == 1) or (condition == 4):
+                condition_ = config.condition[1][0]  # 20 Hz
+            elif (condition == 2) or (condition == 5):
+                condition_ = config.condition[1][1]  # 80 Hz
+            elif (condition == 3) or (condition == 6):
+                condition_ = config.condition[1][2]  # Sham
 
         tmp_df = pd.read_csv(csv)
         tmp_df['Participant'] = participant
@@ -92,6 +122,7 @@ def main():
 
         df = pd.concat((df, tmp_df))
 
+    # breakpoint()
     colors = [(255, 182, 193),  # Cond 1
               (69, 249, 73),  # Cond 4
               (255, 0, 0),
@@ -130,7 +161,23 @@ def point_plot(df, config, name, colors):
 
     # breakpoint()
 
-
+    if config.__name__ == 'ConfigEMG':
+        order = [1, 2, 3, 4, 5, 6, 7, 8]
+        colors_ = []
+        colors = [(255, 182, 193),  # Cond 1
+                  (69, 249, 73),  # Cond 4
+                  (255, 0, 255),
+                  (0, 255, 127),
+                  (255, 102, 102),
+                  (128, 255, 0),
+                  (204, 0, 0),
+                  (76, 153, 0)
+                  ]
+        [colors_.append('#%02x%02x%02x' % c) for c in colors]
+        colors = colors_
+    else:
+        order = [1, 4, 2, 5, 3, 6]
+        colors = colors
     with plt.style.context('seaborn-v0_8-paper'):
         sns.set_theme(style='whitegrid')
         sns.set_context('talk')
@@ -139,29 +186,29 @@ def point_plot(df, config, name, colors):
 
         sns.pointplot(df_train,
                       y="NormTargetFeedback", x="Condition",
-                      ax=ax[0, 0], order=[1, 4, 2, 5, 3, 6],
+                      ax=ax[0, 0], order=order,
                       errorbar='se', join=False, palette=colors)
         sns.pointplot(df_train,
                       y="NormTargetFeedforward", x="Condition",
-                      ax=ax[1, 0], order=[1, 4, 2, 5, 3, 6],
+                      ax=ax[1, 0], order=order,
                       errorbar='se', join=False, palette=colors)
         sns.pointplot(df_train,
                       y="NormTargetTotalInfo", x="Condition",
-                      ax=ax[2, 0], order=[1, 4, 2, 5, 3, 6],
+                      ax=ax[2, 0], order=order,
                       errorbar='se', join=False, palette=colors)
         ax[0, 0].set_title('Training')
 
         sns.pointplot(df_post,
                       y="NormTargetFeedback", x="Condition",
-                      ax=ax[0, 1], order=[1, 4, 2, 5, 3, 6],
+                      ax=ax[0, 1], order=order,
                       errorbar='se', join=False, palette=colors)
         sns.pointplot(df_post,
                       y="NormTargetFeedforward", x="Condition",
-                      ax=ax[1, 1], order=[1, 4, 2, 5, 3, 6],
+                      ax=ax[1, 1], order=order,
                       errorbar='se', join=False, palette=colors)
         sns.pointplot(df_post,
                       y="NormTargetTotalInfo", x="Condition",
-                      ax=ax[2, 1], order=[1, 4, 2, 5, 3, 6],
+                      ax=ax[2, 1], order=order,
                       errorbar='se', join=False, palette=colors)
         ax[0, 1].set_title('Post-Training')
 
@@ -170,14 +217,18 @@ def point_plot(df, config, name, colors):
                                   f"ReinOFF-{config.condition[1][1]}",
                                   f"ReinON-{config.condition[1][1]}",
                                   f"ReinOFF-{config.condition[1][2]}",
-                                  f"ReinON-{config.condition[1][2]}"],
+                                  f"ReinON-{config.condition[1][2]}",
+                                  f"ReinOFF-{config.condition[1][3]}",
+                                  f"ReinON-{config.condition[1][3]}"],
                                  rotation=45)
         ax[2, 1].set_xticklabels([f"ReinOFF-{config.condition[1][0]}",
                                   f"ReinON-{config.condition[1][0]}",
                                   f"ReinOFF-{config.condition[1][1]}",
                                   f"ReinON-{config.condition[1][1]}",
                                   f"ReinOFF-{config.condition[1][2]}",
-                                  f"ReinON-{config.condition[1][2]}"],
+                                  f"ReinON-{config.condition[1][2]}",
+                                  f"ReinOFF-{config.condition[1][3]}",
+                                  f"ReinON-{config.condition[1][3]}"],
                                  rotation=45)
         plt.tight_layout()
         plt.savefig(f"./{config.output_folder}/boxplot/{name}")
@@ -196,12 +247,14 @@ def line_plot(df, config, name, normalization, colors):
         fig, axes = plt.subplots(3, 1, figsize=(15, 10),
                                  sharex='all')
         df_mean = df[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
-        f'{var}TargetTotalInfo', 'Reinforcement', 'TrialNumber']].groupby([
+                      f'{var}TargetTotalInfo', 'Reinforcement',
+                      'TrialNumber']].groupby([
             'TrialNumber', 'Reinforcement']).mean()
         df_mean = df_mean.reset_index()
 
         df_sem = df[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
-        f'{var}TargetTotalInfo', 'Reinforcement', 'TrialNumber']].groupby([
+                     f'{var}TargetTotalInfo', 'Reinforcement',
+                     'TrialNumber']].groupby([
             'TrialNumber', 'Reinforcement']).sem()
         df_sem = df_sem.reset_index()
 
@@ -268,7 +321,7 @@ def line_plot(df, config, name, normalization, colors):
                     # breakpoint()
                     ax.plot(np.arange(1, config.n_trials + 1),
                             df_mean[(df_mean['Reinforcement'] == rein)
-                               & (df_mean['Uncertainty'] == uncer)][
+                                    & (df_mean['Uncertainty'] == uncer)][
                                 f'{f}'],
                             label=rein,
                             color=colors[color_counter])
@@ -305,8 +358,8 @@ def line_plot(df, config, name, normalization, colors):
                 # ax.add_patch(r)
         axes[-1, -1].set_xlim([1, config.n_trials])
         axes[-1, -1].legend()
-        axes[0,0].set_title('TargetFeedback')
-        axes[0,1].set_title('TargetFeedforward')
+        axes[0, 0].set_title('TargetFeedback')
+        axes[0, 1].set_title('TargetFeedforward')
 
         plt.tight_layout()
         plt.savefig(f"./{config.output_folder}/line_plot/test.png")

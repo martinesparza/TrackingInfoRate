@@ -35,7 +35,7 @@ def interpolate_nans(y):
 
 
 # load data
-def load_data(path, filename, project='81Y_titr'):
+def load_data(path, filename, project='emg'):
     csv = np.genfromtxt(path + filename, delimiter=",")
     if project == '81Y':
         cursor = csv[1:418, 0:35]
@@ -54,6 +54,12 @@ def load_data(path, filename, project='81Y_titr'):
         colour = csv[1:418, 42:84]
         target = csv[1:418, 84:126]
         allTrials = list(range(42))
+
+    elif project == 'emg':
+        cursor = csv[1:359, 0:29]
+        colour = csv[1:359, 29:58]
+        target = csv[1:359, 58:87]
+        allTrials = list(range(29))
 
     # remove nans
     nanTrials = np.where(
@@ -253,21 +259,21 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
                                            'BothFeedback', 'BothFeedforward',
                                            'BothTotalInfo'])
         df['TrialNumber'] = df['TrialNumber'] + 1
-        if int(df.iloc[-1]['TrialNumber']) != 42:
-            df.loc[len(df)] = [int(42),
-                               np.nan, np.nan, np.nan, np.nan, np.nan,
-                               np.nan, np.nan, np.nan, np.nan]
-
-        for trial in df.index[1:]:
-            if df.loc[trial]['TrialNumber'] - df.loc[trial - 1]['TrialNumber'] != 1:
-                df.loc[trial - 0.5] = [int(df.loc[trial]['TrialNumber'] - 1),
-                                       np.nan, np.nan, np.nan, np.nan, np.nan,
-                                       np.nan, np.nan, np.nan, np.nan]
+        # if int(df.iloc[-1]['TrialNumber']) != 42:
+        #     df.loc[len(df)] = [int(42),
+        #                        np.nan, np.nan, np.nan, np.nan, np.nan,
+        #                        np.nan, np.nan, np.nan, np.nan]
+        #
+        # for trial in df.index[1:]:
+        #     if df.loc[trial]['TrialNumber'] - df.loc[trial - 1]['TrialNumber'] != 1:
+        #         df.loc[trial - 0.5] = [int(df.loc[trial]['TrialNumber'] - 1),
+        #                                np.nan, np.nan, np.nan, np.nan, np.nan,
+        #                                np.nan, np.nan, np.nan, np.nan]
 
         # breakpoint()
         df = df.sort_index().reset_index(drop=True)
         df['TrialNumber'] = df['TrialNumber'].astype('int')
-        df.to_csv(f"output_81Y_titr/output_{filename}",
+        df.to_csv(f"output_emg/output_{filename}",
                   index=False)
 
         # plotting
