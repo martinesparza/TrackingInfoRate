@@ -56,9 +56,9 @@ def load_data(path, filename, project='emg'):
         allTrials = list(range(42))
 
     elif project == 'emg':
-        cursor = csv[1:359, 0:29]
-        colour = csv[1:359, 29:58]
-        target = csv[1:359, 58:87]
+        cursor = csv[1:418, 0:29]
+        colour = csv[1:418, 29:58]
+        target = csv[1:418, 58:87]
         allTrials = list(range(29))
 
     # remove nans
@@ -273,7 +273,7 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
         # breakpoint()
         df = df.sort_index().reset_index(drop=True)
         df['TrialNumber'] = df['TrialNumber'].astype('int')
-        df.to_csv(f"output_emg/output_{filename}",
+        df.to_csv(f"output_emg_vmd18/output_{filename}",
                   index=False)
 
         # plotting
@@ -298,7 +298,7 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
         return df
 
 
-VMD = 15
+VMD = 18
 if args.filename:
     compute_info_transfer(args.path, args.filename)
 else:

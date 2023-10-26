@@ -10,26 +10,28 @@ from plotting import Config81Y, Config83Y
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--name", type=str,
                     default='all_subjects.csv')
-parser.add_argument("-p", "--path", type=str, default='data/')
+parser.add_argument("-f", "--folder", type=str, default='data/')
 args = parser.parse_args()
 
 
 def main(args):
-    if args.path[-3:] == '81Y':
+    if args.folder[-3:] == '81Y':
         config = Config81Y()
-    elif args.path[-3:] == '83Y':
+    elif args.folder[-3:] == '83Y':
         config = Config83Y()
 
-    files = glob.glob(f"{args.path}/output*.csv")
+    files = glob.glob(f"{args.folder}/o*.csv")
     df = pd.DataFrame()
-    for file in tqdm(files):
-        df_ = pd.read_csv(file)
-
-        file_name = re.split('/', string=file)[-1]
-        if len(file_name) == 28:
-            participant = int(file_name[10:11])
+    for csv in files:
+        file_name = re.split('/', string=csv)[-1]
+        df_ = pd.read_csv(csv)
+        # breakpoint()
+        if len(file_name) == config.name_length[0]:  #
+            participant = int(
+                file_name[config.name_length[1]:config.name_length[2]])
         else:
-            participant = int(file_name[10:12])
+            participant = int(
+                file_name[config.name_length[1]:config.name_length[3]])
         # Wrap block
         block = int(file_name[-11:-10])
 
@@ -65,7 +67,7 @@ def main(args):
 
         df = pd.concat((df, df_))
 
-    df.to_csv(f"{args.path}/{args.name}")
+    df.to_csv(f"{args.folder}/{args.name}")
 
 
 if __name__ == '__main__':

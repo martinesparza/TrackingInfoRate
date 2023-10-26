@@ -26,7 +26,7 @@ for subj = 1:length(disubj)
             end
             if ~isnan(reinforced)
                 colorFB = squeeze(all(Color_target_alltrials==colorOK,2));
-                T=table(CURSOR(60:420,:),colorFB(60:420,:),repmat(Seq_target(60:420),1,29),'VariableNames',{'cursor','colour','target'});
+                T=table(CURSOR(1:420,:),colorFB(1:420,:),repmat(Seq_target(1:420),1,29),'VariableNames',{'cursor','colour','target'});
                 if block == 10
                     block = 0;
                 end

@@ -54,7 +54,7 @@ class Config81Y_titr():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--folder", type=str, default='./')
-    parser.add_argument("-n", "--name", type=str, default="figure.png")
+    parser.add_argument("-n", "--name", type=str, default="point_plot_vmd15.png")
     parser.add_argument("-p", "--plot", type=str, default="line_plot")
     parser.add_argument("-s", "--save", type=bool, default=False)
 
