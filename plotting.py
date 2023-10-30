@@ -161,19 +161,17 @@ def point_plot(df, config, name, normalization, colors):
     df_post = df[(df['TrialNumber']).isin(config.post_trials)]
 
     # Train
-    # breakpoint()
     df_train = df_train[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
                          f'{var}TargetTotalInfo',
-                         'Participant', 'Condition']].groupby(
-        ['Condition', 'Participant']).mean()
+                         'Participant', 'Reinforcement']].groupby(
+        ['Reinforcement', 'Participant']).mean()
     df_train = df_train.reset_index()
+
     df_post = df_post[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
                        f'{var}TargetTotalInfo',
                        'Participant', 'Condition']].groupby(
         ['Condition', 'Participant']).mean()
     df_post = df_post.reset_index()
-
-    # breakpoint()
 
     if config.__name__ == 'ConfigEMG':
         order = [1, 2, 3, 4, 5, 6, 7, 8]
@@ -198,26 +196,37 @@ def point_plot(df, config, name, normalization, colors):
         sns.set_theme(style='whitegrid')
         sns.set_context('talk')
         fig, ax = plt.subplots(3, 2, figsize=(12, 12),
-                               sharex='all', sharey='row')
-
-        sns.pointplot(df_train,
-                      y=f"{var}TargetFeedback", x="Condition",
-                      ax=ax[0, 0], order=order,
-                      errorbar='se', join=False, palette=colors)
-        sns.pointplot(df_train,
-                      y=f"{var}TargetFeedforward", x="Condition",
-                      ax=ax[1, 0], order=order,
-                      errorbar='se', join=False, palette=colors)
-        sns.pointplot(df_train,
-                      y=f"{var}TargetTotalInfo", x="Condition",
-                      ax=ax[2, 0], order=order,
-                      errorbar='se', join=False, palette=colors)
+                               sharex=False, sharey=False)
+        # breakpoint()
+        # sns.pointplot(df_train,
+        #               y=f"{var}TargetFeedback", x="Reinforcement",
+        #               ax=ax[0, 0],
+        #               errorbar='se', join=False, palette=colors)
         # sns.swarmplot(data=df_train,
-        #               x="Condition",
         #               y=f"{var}TargetFeedback",
-        #               dodge=True,
-        #               palette=colors,
-        #               ax=ax[0,0])
+        #               palette='gray',
+        #               x='Reinforcement',
+        #               ax=ax[0, 0])
+        sns.lineplot(data=df_train,
+                     x="Reinforcement",
+                     y=f"{var}TargetFeedback",
+                     palette="gray",
+                     estimator=None,
+                     units="Participant",
+                     style="Reinforcement",
+                     markers=True,
+                     ax=ax[0, 0])
+
+        # sns.pointplot(df_train,
+        #               y=f"{var}TargetFeedforward", x="Condition",
+        #               ax=ax[1, 0],
+        #               errorbar='se', join=False, palette=colors)
+        #
+        #
+        # sns.pointplot(df_train,
+        #               y=f"{var}TargetTotalInfo", x="Condition",
+        #               ax=ax[2, 0], order=order,
+        #               errorbar='se', join=False, palette=colors)
 
         ax[0, 0].set_title('Training')
 
@@ -235,17 +244,17 @@ def point_plot(df, config, name, normalization, colors):
                       errorbar='se', join=False, palette=colors)
         ax[0, 1].set_title('Post-Training')
 
-        ax[2, 0].set_xticklabels([
-            # f"ReinOFF-{config.condition[1][0]}",
-            # f"ReinON-{config.condition[1][0]}",
-            # f"ReinOFF-{config.condition[1][1]}",
-            # f"ReinON-{config.condition[1][1]}",
-            f"ReinOFF-{config.condition[1][2]}",
-            f"ReinON-{config.condition[1][2]}",
-            # f"ReinOFF-{config.condition[1][3]}",
-            # f"ReinON-{config.condition[1][3]}"
-        ],
-            rotation=45)
+        # ax[2, 0].set_xticklabels([
+        #     # f"ReinOFF-{config.condition[1][0]}",
+        #     # f"ReinON-{config.condition[1][0]}",
+        #     # f"ReinOFF-{config.condition[1][1]}",
+        #     # f"ReinON-{config.condition[1][1]}",
+        #     f"ReinOFF-{config.condition[1][2]}",
+        #     f"ReinON-{config.condition[1][2]}",
+        #     # f"ReinOFF-{config.condition[1][3]}",
+        #     # f"ReinON-{config.condition[1][3]}"
+        # ],
+        #     rotation=45)
         ax[2, 1].set_xticklabels([
             # f"ReinOFF-{config.condition[1][0]}",
             # f"ReinON-{config.condition[1][0]}",
