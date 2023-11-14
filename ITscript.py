@@ -11,6 +11,7 @@ from __init__ import PATHS
 from tqdm import tqdm
 import seaborn as sns
 from joblib import Parallel, delayed
+from plotting import Config81Y, Config83Y, ConfigEMG
 
 import warnings
 
@@ -20,6 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--filename", type=str, default='')
 parser.add_argument("-p", "--path", type=str, default='data/')
 parser.add_argument("-pl", "--plot", type=bool, default=False)
+parser.add_argument("-exp", "--experiment", type=str, default='emg')
 args = parser.parse_args()
 
 
@@ -64,19 +66,23 @@ def load_data(path, filename, project='emg'):
     # remove nans
     nanTrials = np.where(
         np.all(np.isnan(cursor), axis=0))  # trials with only nans
+
+    allTrials = list(set(allTrials) - set(nanTrials[0]))
     cursor = np.delete(cursor, nanTrials, 1)
     colour = np.delete(colour, nanTrials, 1)
     target = np.delete(target, nanTrials, 1)
-    for tr in nanTrials[0]:
-        allTrials.pop(tr)
+
     for idx, tr in enumerate(cursor.T):
         tr = interpolate_nans(tr)
         cursor[:, idx] = tr
     return cursor, colour, target, allTrials
 
 
-# compute FB, FF and total info
-def compute_info_transfer(path=None, filename=None, groupby=''):
+def compute_info_transfer(path=None, filename=None, exp=None, groupby=''):
+    # breakpoint()
+    if exp == 'emg':
+        config = ConfigEMG
+
     if filename is None:
         if (args.path):
             df = pd.DataFrame()
@@ -85,7 +91,8 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
                 filename = os.fsdecode(file)
                 # cond = int(filename[-5:-4])
                 if filename.endswith(".csv"):
-                    new_df = compute_info_transfer(args.path, filename)
+                    new_df = compute_info_transfer(args.path, filename,
+                                                   exp=exp)
                     # new_df['Cond'] = cond * np.ones(len(new_df)).astype(
                     #     'int32')
                     df = pd.concat((df, new_df))
@@ -264,16 +271,26 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
         #                        np.nan, np.nan, np.nan, np.nan, np.nan,
         #                        np.nan, np.nan, np.nan, np.nan]
         #
-        # for trial in df.index[1:]:
-        #     if df.loc[trial]['TrialNumber'] - df.loc[trial - 1]['TrialNumber'] != 1:
-        #         df.loc[trial - 0.5] = [int(df.loc[trial]['TrialNumber'] - 1),
-        #                                np.nan, np.nan, np.nan, np.nan, np.nan,
-        #                                np.nan, np.nan, np.nan, np.nan]
+        for trial in np.arange(1, config.n_trials + 1):
+            if len(df) > trial - 1:
+                if int(df.loc[trial - 1]['TrialNumber']) != trial:
 
-        # breakpoint()
-        df = df.sort_index().reset_index(drop=True)
+                    df.loc[trial - 1 - 0.5] = [trial,
+                                               np.nan, np.nan, np.nan, np.nan,
+                                               np.nan,
+                                               np.nan, np.nan, np.nan, np.nan]
+
+                    df = df.sort_index().reset_index(drop=True)
+            else:
+                df.loc[trial - 1] = ([trial,
+                                      np.nan, np.nan, np.nan, np.nan,
+                                      np.nan,
+                                      np.nan, np.nan, np.nan, np.nan])
+
+                df = df.sort_index().reset_index(drop=True)
+
         df['TrialNumber'] = df['TrialNumber'].astype('int')
-        df.to_csv(f"output_emg_vmd18/output_{filename}",
+        df.to_csv(f"output_emg_test_tobedeleted/output_{filename}",
                   index=False)
 
         # plotting
@@ -298,8 +315,8 @@ def compute_info_transfer(path=None, filename=None, groupby=''):
         return df
 
 
-VMD = 18
+VMD = 15
 if args.filename:
     compute_info_transfer(args.path, args.filename)
 else:
-    compute_info_transfer()
+    compute_info_transfer(exp=args.experiment)

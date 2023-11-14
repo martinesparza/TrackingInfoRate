@@ -1,6 +1,7 @@
 warning('off')
 clear all
 disubj = dir('/data/data_emg/R*');  % Set this to the data path
+load('/data/data_emg/CURSOR_clean_Nov2023.mat')
 conds = [];
 for subj = 1:length(disubj)
     di = dir(['/data/data_emg/' disubj(subj).name filesep 'rml*']);
@@ -26,12 +27,16 @@ for subj = 1:length(disubj)
             end
             if ~isnan(reinforced)
                 colorFB = squeeze(all(Color_target_alltrials==colorOK,2));
-                T=table(CURSOR(1:420,:),colorFB(1:420,:),repmat(Seq_target(1:420),1,29),'VariableNames',{'cursor','colour','target'});
+                %T=table(CURSOR(1:420,:),colorFB(1:420,:),repmat(Seq_target(1:420),1,29),'VariableNames',{'cursor','colour','target'});
+                T=table(CURSOR_allsubjects(61:end,:, block, subj),colorFB(61:420,:),repmat(Seq_target(61:end),1,29),'VariableNames',{'cursor','colour','target'});
+
+
                 if block == 10
                     block = 0;
                 end
-                writetable(T,['/data/preprocessed_emg/' disubj(subj).name '_block' num2str(block) '_cond' num2str(cond) '.csv'])
-                %save(['/home/esparza/repos/TrackingInfoRate/output_emg/output_' disubj(subj).name '_block' num2str(block) '_conditions.mat'], "noise_reinf_type_alltrials")
+                %writetable(T,['/data/preprocessed_emg/' disubj(subj).name '_block' num2str(block) '_cond' num2str(cond) '.csv'])
+                writetable(T,['/data/preprocessed_emg_new/' disubj(subj).name '_block' num2str(block) '_cond' num2str(cond) '.csv'])
+
             end
         end
     end
