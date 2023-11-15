@@ -290,7 +290,7 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby=''):
                 df = df.sort_index().reset_index(drop=True)
 
         df['TrialNumber'] = df['TrialNumber'].astype('int')
-        df.to_csv(f"output_emg_test_tobedeleted/output_{filename}",
+        df.to_csv(f"output_emg_new/output_{filename}",
                   index=False)
 
         # plotting
