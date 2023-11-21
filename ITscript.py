@@ -12,6 +12,8 @@ from tqdm import tqdm
 import seaborn as sns
 from joblib import Parallel, delayed
 from plotting import Config81Y, Config83Y, ConfigEMG
+from operator import itemgetter
+from itertools import groupby
 
 import warnings
 
@@ -35,9 +37,14 @@ def interpolate_nans(y):
     y[nans] = np.interp(x(nans), x(~nans), y[~nans])
     return y
 
+def group_consecutive(data):
+    groups = []
+    for k, g in groupby(enumerate(data), lambda x:x[0]-x[1]):
+        groups.append(list(map(itemgetter(1), g)))
+    return groups
 
 # load data
-def load_data(path, filename, project='emg'):
+def load_data(path, filename, diagnostics, project='emg'):
     csv = np.genfromtxt(path + filename, delimiter=",")
     if project == '81Y':
         cursor = csv[1:418, 0:35]
@@ -58,27 +65,55 @@ def load_data(path, filename, project='emg'):
         allTrials = list(range(42))
 
     elif project == 'emg':
-        cursor = csv[1:418, 0:29]
-        colour = csv[1:418, 29:58]
-        target = csv[1:418, 58:87]
+        cursor = csv[1:358, 0:29]
+        colour = csv[1:358, 29:58]
+        target = csv[1:358, 58:87]
         allTrials = list(range(29))
+        cond = filename[-5:-4]
+        block = filename[-11:-10]
+        if len(filename) == 24:
+            subj = filename[5:7]
+        else:
+            subj = filename[5:6]
 
     # remove nans
-    nanTrials = np.where(
-        np.all(np.isnan(cursor), axis=0))  # trials with only nans
 
-    allTrials = list(set(allTrials) - set(nanTrials[0]))
+    nanTrials = []
+    for idx, tr in enumerate(cursor.T):
+        # breakpoint()
+        if np.all(np.isnan(tr)):
+            nanTrials.append(idx)
+
+        elif len(np.where(np.isnan(tr))[0]) >= 10:
+            groups = group_consecutive(np.where(np.isnan(tr))[0])
+            for group in groups:
+                if len(group) > 10:
+                    nanTrials.append(idx)
+                    break
+
+        elif len(np.where(np.isnan(tr))[0]) < 10:
+            tr = interpolate_nans(tr)
+            cursor[:, idx] = tr
+
+
+    # nanTrials = np.where(
+    #     np.all(np.isnan(cursor), axis=0))  # trials with only nans
+    diagnostics.loc[-1] = [subj, block, cond, len(nanTrials)]
+    diagnostics = diagnostics.sort_index().reset_index(drop=True)
+
+    allTrials = list(set(allTrials) - set(nanTrials))
     cursor = np.delete(cursor, nanTrials, 1)
     colour = np.delete(colour, nanTrials, 1)
     target = np.delete(target, nanTrials, 1)
-
-    for idx, tr in enumerate(cursor.T):
-        tr = interpolate_nans(tr)
-        cursor[:, idx] = tr
-    return cursor, colour, target, allTrials
+    # breakpoint()
 
 
-def compute_info_transfer(path=None, filename=None, exp=None, groupby=''):
+
+    return cursor, colour, target, allTrials, diagnostics
+
+
+def compute_info_transfer(path=None, filename=None, exp=None, groupby='',
+                          diagnostics=None):
     # breakpoint()
     if exp == 'emg':
         config = ConfigEMG
@@ -91,11 +126,13 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby=''):
                 filename = os.fsdecode(file)
                 # cond = int(filename[-5:-4])
                 if filename.endswith(".csv"):
-                    new_df = compute_info_transfer(args.path, filename,
-                                                   exp=exp)
+                    new_df, diagnostics = compute_info_transfer(args.path, filename,
+                                                   exp=exp,
+                                                   diagnostics=diagnostics)
                     # new_df['Cond'] = cond * np.ones(len(new_df)).astype(
                     #     'int32')
                     df = pd.concat((df, new_df))
+            diagnostics.to_csv(f"output_emg_tobedeleted/diagnostics.csv", index=False)
             dfmean = df.groupby(level=0).mean()
             dfstd = df.groupby(level=0).std()
 
@@ -214,7 +251,8 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby=''):
 
 
     else:
-        cursor, colour, target, allTrials = load_data(path, filename)
+        cursor, colour, target, allTrials, diagnostics = load_data(path, filename,
+                                                       diagnostics)
         # only target
         targetFB = []
         targetINFO = []
@@ -290,7 +328,7 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby=''):
                 df = df.sort_index().reset_index(drop=True)
 
         df['TrialNumber'] = df['TrialNumber'].astype('int')
-        df.to_csv(f"output_emg_new/output_{filename}",
+        df.to_csv(f"output_emg_tobedeleted/output_{filename}",
                   index=False)
 
         # plotting
@@ -312,11 +350,13 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby=''):
             plt.suptitle(f"File: {args.filename}")
             plt.savefig(f"./figures/{args.filename}.png")
 
-        return df
+        return df, diagnostics
 
 
 VMD = 15
 if args.filename:
     compute_info_transfer(args.path, args.filename)
 else:
-    compute_info_transfer(exp=args.experiment)
+    diagnostics = pd.DataFrame(columns=['Subject', 'Block', 'Condition',
+                                        'TrialsRemoved'])
+    compute_info_transfer(exp=args.experiment, diagnostics=diagnostics)

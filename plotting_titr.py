@@ -54,7 +54,8 @@ class Config81Y_titr():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--folder", type=str, default='./')
-    parser.add_argument("-n", "--name", type=str, default="point_plot_vmd15.png")
+    parser.add_argument("-n", "--name", type=str,
+                        default="point_plot_vmd15.png")
     parser.add_argument("-p", "--plot", type=str, default="line_plot")
     parser.add_argument("-s", "--save", type=bool, default=False)
 
@@ -124,6 +125,8 @@ def main():
 
 
 def pre_post(df, config, name, args):
+
+
     df_pre_ = df[(df['TrialNumber']).isin([1, 2, 3])]
     df_post_ = df[(df['TrialNumber']).isin([40, 41, 42])]
     df_pre_['Trials'] = 'Pre'
@@ -135,20 +138,19 @@ def pre_post(df, config, name, args):
 
     # Train
     df_pre = df_pre_[['TargetFeedback', 'TargetFeedforward',
-                     'TargetTotalInfo',
-                     'Participant', 'Block']].groupby(['Participant',
-                                                       'Block']).mean()
+                      'TargetTotalInfo',
+                      'Participant', 'Block']].groupby(['Participant',
+                                                        'Block']).mean()
     df_pre = df_pre.reset_index()
     df_pre['Trials'] = 'Pre'
     df_post = df_post_[['TargetFeedback', 'TargetFeedforward',
-                       'TargetTotalInfo',
-                       'Participant', 'Block']].groupby(['Participant',
-                                                        'Block']).mean()
+                        'TargetTotalInfo',
+                        'Participant', 'Block']].groupby(['Participant',
+                                                          'Block']).mean()
     df_post = df_post.reset_index()
     df_post['Trials'] = 'Post'
 
     df = pd.concat([df_pre, df_post])
-
 
     with plt.style.context('seaborn-v0_8-paper'):
         sns.set_theme(style='whitegrid')
@@ -157,20 +159,20 @@ def pre_post(df, config, name, args):
         fig, ax = plt.subplots(3, 1, figsize=(12, 10), sharex='all')
 
         sns.pointplot(df,
-                    y="TargetFeedback", x="Block", hue='Trials',
-                    ax=ax[0], palette='gray', errorbar='se', dodge=0.2,
+                      y="TargetFeedback", x="Block", hue='Trials',
+                      ax=ax[0], palette='gray', errorbar='se', dodge=0.2,
                       join=False)
         ax[0].legend([])
         ax[0].set_xlabel('')
         sns.pointplot(df,
-                    y="TargetFeedforward", x="Block", hue='Trials',
-                    ax=ax[1], palette='gray', errorbar='se', dodge=0.2,
+                      y="TargetFeedforward", x="Block", hue='Trials',
+                      ax=ax[1], palette='gray', errorbar='se', dodge=0.2,
                       join=False)
         ax[1].legend([])
         ax[1].set_xlabel('')
         sns.pointplot(df,
-                    y="TargetTotalInfo", x="Block", hue='Trials',
-                    ax=ax[2], palette='gray', errorbar='se', dodge=0.2,
+                      y="TargetTotalInfo", x="Block", hue='Trials',
+                      ax=ax[2], palette='gray', errorbar='se', dodge=0.2,
                       join=False)
         # ax[0, 0].set_title('Training')
 
@@ -179,36 +181,42 @@ def pre_post(df, config, name, args):
 
 
 def uncertainty_plot(df, config, name):
+
     df = df[(df['TrialNumber']).isin(np.arange(4, 39).tolist())]
 
     # Train
     df = df[['TargetFeedback', 'TargetFeedforward',
-                 'TargetTotalInfo',
-                 'Participant', 'Uncertainty', 'Reinforcement']].groupby(
+             'TargetTotalInfo',
+             'Participant', 'Uncertainty', 'Reinforcement']].groupby(
         ['Participant', 'Uncertainty', 'Reinforcement']).mean()
     df = df.reset_index()
 
+    df[['TargetFeedback', 'TargetFeedforward',
+             'TargetTotalInfo']] = df[['TargetFeedback', 'TargetFeedforward',
+                                       'TargetTotalInfo']] * 60
+
     with plt.style.context('seaborn-v0_8-paper'):
-        sns.set_theme(style='whitegrid',palette=["r", "g"])
+        sns.set_theme(style='whitegrid', palette=["r", "g"])
         sns.set_context('talk')
-        fig, ax = plt.subplots(3,1, figsize=(20, 10),
+        fig, ax = plt.subplots(2, 1, figsize=(10, 10),
                                sharex='all')
 
         sns.pointplot(df,
-                    y="TargetFeedback", x="Uncertainty", hue='Reinforcement',
-                    ax=ax[0], errorbar='se')
+                      y="TargetFeedback", x="Uncertainty", hue='Reinforcement',
+                      ax=ax[0], errorbar='se', palette='gray')
         ax[0].legend([])
         ax[0].set_xlabel('')
 
         sns.pointplot(df,
-                    y="TargetFeedforward", x="Uncertainty", hue='Reinforcement',
-                    ax=ax[1], errorbar='se')
-        ax[1].legend([])
-        ax[1].set_xlabel('')
+                      y="TargetFeedforward", x="Uncertainty",
+                      hue='Reinforcement',
+                      ax=ax[1], errorbar='se', palette='gray')
+        # ax[1].legend([])
+        # ax[1].set_xlabel('')
 
-        sns.pointplot(df,
-                    y="TargetTotalInfo", x="Uncertainty", hue='Reinforcement',
-                    ax=ax[2], errorbar='se')
+        # sns.pointplot(df,
+        #             y="TargetTotalInfo", x="Uncertainty", hue='Reinforcement',
+        #             ax=ax[2], errorbar='se')
         plt.savefig(f"./{config.output_folder}/{name}")
         return
 
