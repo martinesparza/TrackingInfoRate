@@ -53,6 +53,8 @@ def main(args):
         df_['Reinforcement'] = reinforcement
         df_[f"{config.condition[0]}"] = condition_
         df_['Block'] = block
+        df_['Condition'] = condition
+
 
         df_['NormTargetFeedback'] = (df_['TargetFeedback'] /
                                      df_['TargetFeedback'].iloc[
