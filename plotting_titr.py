@@ -195,24 +195,39 @@ def uncertainty_plot(df, config, name):
              'TargetTotalInfo']] = df[['TargetFeedback', 'TargetFeedforward',
                                        'TargetTotalInfo']] * 60
 
-    with plt.style.context('seaborn-v0_8-paper'):
-        sns.set_theme(style='whitegrid', palette=["r", "g"])
+    with plt.style.context('default'):
+        # sns.set_theme(style='whitegrid', palette=["r", "g"])
+        plt.rcParams["font.family"] = "Arial"
+
         sns.set_context('talk')
         fig, ax = plt.subplots(2, 1, figsize=(10, 10),
-                               sharex='all')
+                               sharex=False)
+        sns.despine(top=True, right=True, left=False, bottom=False)
+        for ax_ in ax:
+                ax_.tick_params(top=False, bottom=True, left=True,
+                                  right=False)
 
         sns.pointplot(df,
                       y="TargetFeedback", x="Uncertainty", hue='Reinforcement',
                       ax=ax[0], errorbar='se', palette='gray')
-        ax[0].legend([])
-        ax[0].set_xlabel('')
+        ax[0].set_xlabel('Uncertainty')
+        ax[0].set_ylabel('Feedback (bits/s)')  # FB
+        ax[0].set_ylim([3, 4.5])  # FB
+        ax[0].set_yticks(np.arange(3, 5, 0.5).tolist())
+
+
 
         sns.pointplot(df,
                       y="TargetFeedforward", x="Uncertainty",
                       hue='Reinforcement',
                       ax=ax[1], errorbar='se', palette='gray')
         # ax[1].legend([])
-        # ax[1].set_xlabel('')
+        ax[1].set_xlabel('Uncertainty')
+        ax[1].set_ylabel('Feedforward (bits/s)')  # FB
+        ax[1].set_ylim([95, 105])
+        ax[1].set_yticks(np.arange(90, 110, 5).tolist())
+
+
 
         # sns.pointplot(df,
         #             y="TargetTotalInfo", x="Uncertainty", hue='Reinforcement',

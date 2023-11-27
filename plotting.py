@@ -137,26 +137,26 @@ def main():
 
         df = pd.concat((df, tmp_df))
 
-    if config.__name__ == 'Config83Y':
-        mat_file = scipy.io.loadmat('/home/esparza/matfile.mat')
-        mat_file = mat_file['matfile']
-        NoRx_col_idx = 12
-
-        NoRx_indices = np.where(mat_file[:, NoRx_col_idx] == 1)
-
-        # for index, row in df.iterrows():
-        for idx in NoRx_indices[0]:
-            subject = mat_file[idx, 0]
-            trial = mat_file[idx, 1]
-            block = mat_file[idx, 2]
-
-            index = df.index[(df['Participant'] == subject) &
-                             (df['TrialNumber'] == trial) &
-                             (df['Block'] == block)]
-
-            df.at[index[0], 'TargetFeedback'] = np.nan
-            df.at[index[0], 'TargetFeedforward'] = np.nan
-            df.at[index[0], 'TargetTotalInfo'] = np.nan
+    # if config.__name__ == 'Config83Y':
+    #     mat_file = scipy.io.loadmat('/home/esparza/matfile.mat')
+    #     mat_file = mat_file['matfile']
+    #     NoRx_col_idx = 12
+    #
+    #     NoRx_indices = np.where(mat_file[:, NoRx_col_idx] == 1)
+    #
+    #     # for index, row in df.iterrows():
+    #     for idx in NoRx_indices[0]:
+    #         subject = mat_file[idx, 0]
+    #         trial = mat_file[idx, 1]
+    #         block = mat_file[idx, 2]
+    #
+    #         index = df.index[(df['Participant'] == subject) &
+    #                          (df['TrialNumber'] == trial) &
+    #                          (df['Block'] == block)]
+    #
+    #         df.at[index[0], 'TargetFeedback'] = np.nan
+    #         df.at[index[0], 'TargetFeedforward'] = np.nan
+    #         df.at[index[0], 'TargetTotalInfo'] = np.nan
 
         # breakpoint()
     colors = [
@@ -188,8 +188,8 @@ def point_plot(df, config, name, normalization, colors, bits):
     else:
         var = ''
 
-    # if config.__name__ == 'Config83Y':
-    #     df = df[df['Stimulation'] == 'Sham']
+    if config.__name__ == 'Config83Y':
+        df = df[df['Stimulation'] == 'Sham']
 
     df_pre = df[(df['TrialNumber']).isin(config.pre_trials)]
     df_train = df[(df['TrialNumber']).isin(config.train_trials)]
@@ -243,25 +243,33 @@ def point_plot(df, config, name, normalization, colors, bits):
         order = [1, 2, 3, 4, 5, 6, 7, 8]
         colors_ = []
         colors = [
-            (255, 182, 193),  # Cond 1
-            (69, 249, 73),  # Cond 4
-            (255, 102, 102),
-            (128, 255, 0),
-            (255, 0, 255),
-            (0, 255, 127),
-            (204, 0, 0),
-            (76, 153, 0)
+            # (255, 182, 193),  # Cond 1
+            # (69, 249, 73),  # Cond 4
+            # (255, 102, 102),
+            # (128, 255, 0),
+            # (255, 0, 255),
+            # (0, 255, 127),
+            # (204, 0, 0),
+            # (76, 153, 0)
         ]
         [colors_.append('#%02x%02x%02x' % c) for c in colors]
         colors = colors_
     else:
         order = [1, 4, 2, 5, 3, 6]
         colors = colors
-    with plt.style.context('seaborn-v0_8-paper'):
-        sns.set_theme(style='whitegrid')
-        sns.set_context('notebook')
-        fig, ax = plt.subplots(2, 3, figsize=(12, 8),
-                               sharex='col', sharey='row')
+
+    with plt.style.context('default'):
+        plt.rcParams["font.family"] = "Arial"
+
+        sns.set_context('talk')
+        fig, ax = plt.subplots(2, 3, figsize=(15, 12),
+                               sharex=False, sharey=False)
+
+        sns.despine(top=True, right=True, left=False, bottom=False)
+        for ax_ in ax:
+            for axx__ in ax_:
+                axx__.tick_params(top=False, bottom=True, left=True,
+                                  right=False)
 
         sns.pointplot(df_pre,
                       y=f"{var}TargetFeedback", x='Condition',
@@ -271,7 +279,7 @@ def point_plot(df, config, name, normalization, colors, bits):
         #               y=f"{var}TargetFeedback", x='Reinforcement',
         #               ax=ax[0, 0],
         #               errorbar='se', join=False, palette=colors)
-        sns.pointplot(df_pre[df_pre['Participant'] != 7],
+        sns.pointplot(df_pre,
                       y=f"{var}TargetFeedforward", x='Condition',
                       ax=ax[1, 0], order=order,
                       errorbar='se', join=False, palette=colors)
@@ -280,7 +288,6 @@ def point_plot(df, config, name, normalization, colors, bits):
         #               ax=ax[1, 0],
         #               errorbar='se', join=False, palette=colors)
         ax[0, 0].set_title('Pre-Training')
-
 
         # Comment underneath to remove points
         # sns.swarmplot(data=df_train,
@@ -304,7 +311,6 @@ def point_plot(df, config, name, normalization, colors, bits):
         #               ax=ax[0, 1],
         #               errorbar='se', join=False, palette=colors)
 
-
         # sns.swarmplot(data=df_train[(df_train['Participant'] != 6)],
         #               y=f"{var}TargetFeedforward",
         #               palette=['gray', 'gray'],
@@ -317,7 +323,7 @@ def point_plot(df, config, name, normalization, colors, bits):
         #              units="Participant",
         #              color='lightgray',
         #              ax=ax[1, 0])
-        sns.pointplot(df_train[(df_train['Participant'] != 6)],
+        sns.pointplot(df_train,
                       y=f"{var}TargetFeedforward", x="Condition",
                       ax=ax[1, 1], order=order,
                       errorbar='se', join=False, palette=colors)
@@ -325,7 +331,6 @@ def point_plot(df, config, name, normalization, colors, bits):
         #               y=f"{var}TargetFeedforward", x='Reinforcement',
         #               ax=ax[1, 1],
         #               errorbar='se', join=False, palette=colors)
-
 
         # sns.pointplot(df_post,
         #               y=f"{var}TargetFeedback", x="Condition",
@@ -335,14 +340,14 @@ def point_plot(df, config, name, normalization, colors, bits):
         #               y=f"{var}TargetFeedforward", x="Condition",
         #               ax=ax[1, 1], order=order,
         #               errorbar='se', join=False, palette=colors)
-        # sns.pointplot(df_post[(df_post['Participant'] != 8) &
-        #                       (df_post['Participant'] != 9)],
+        # sns.pointplot(df_post[(df_post['Participant'] != 9) &
+        #                       (df_post['Participant'] != 8)],
         #               y=f"{var}TargetFeedback", x="Reinforcement",
         #               ax=ax[0, 2],
         #               errorbar='se', join=False, palette=colors)
         # sns.pointplot(df_post,
         #               y=f"{var}TargetTotalInfo", x="Condition",
-        #               ax=ax[2, 1], order=order,
+        #               ax=ax[0, 2], order=order,
         #               errorbar='se', join=False, palette=colors)
 
         ax[0, 1].set_title('Training')
@@ -353,9 +358,9 @@ def point_plot(df, config, name, normalization, colors, bits):
                       errorbar='se', join=False, palette=colors)
         # sns.pointplot(df_train,
         #               y=f"{var}TargetFeedback", x='Stimulation',
-        #               ax=ax[0, 1],
+        #               ax=ax[0, 2],
         #               errorbar='se', join=False, palette=colors)
-        sns.pointplot(df_post,
+        sns.pointplot(df_post[df_post['Participant'] != 1],
                       y=f"{var}TargetFeedforward", x='Condition',
                       ax=ax[1, 2], order=order,
                       errorbar='se', join=False, palette=colors)
@@ -364,8 +369,31 @@ def point_plot(df, config, name, normalization, colors, bits):
         #               ax=ax[1, 2],
         #               errorbar='se', join=False, palette=colors)
 
-
         ax[0, 2].set_title('Post-Training')
+
+        # Set limits
+        ax[0, 0].set_ylabel('Feedback (bits/s)')  # FB
+        ax[0, 1].set_ylabel('Feedback (bits/s)')  # FB
+        ax[0, 2].set_ylabel('Feedback (bits/s)')  # FB
+
+        ax[1, 0].set_ylabel('Feedforward (bits/s)')  # FB
+        ax[1, 1].set_ylabel('Feedforward (bits/s)')  # FB
+        ax[1, 2].set_ylabel('Feedforward (bits/s)')  # FB
+
+        for fb_ax in ax[0,:]:
+            fb_ax.set_ylim([4, 5])
+            # fb_ax.set_xlabel('Trials')
+
+        for ff_ax in ax[1,:]:
+            ff_ax.set_ylim([85, 100])
+            # ff_ax.set_xlabel('Rein')
+            ff_ax.set_yticks(np.arange(85, 105, 5).tolist())
+
+
+        ax[0, 2].set_ylim([4, 5])  # FB
+        ax[1, 2].set_ylim([85, 100])  # FB
+        ax[1, 2].set_yticks(np.arange(85, 105, 5).tolist())
+
 
         for i in range(3):
             ax[1, i].set_xticklabels([
@@ -375,8 +403,19 @@ def point_plot(df, config, name, normalization, colors, bits):
                 f"ReinON-{config.condition[1][1]}",
                 f"ReinOFF-{config.condition[1][2]}",
                 f"ReinON-{config.condition[1][2]}",
-        #         f"ReinOFF-{config.condition[1][3]}",
-        #         f"ReinON-{config.condition[1][3]}"
+                #         f"ReinOFF-{config.condition[1][3]}",
+                #         f"ReinON-{config.condition[1][3]}"
+            ],
+                rotation=45)
+            ax[0, i].set_xticklabels([
+                f"ReinOFF-{config.condition[1][0]}",
+                f"ReinON-{config.condition[1][0]}",
+                f"ReinOFF-{config.condition[1][1]}",
+                f"ReinON-{config.condition[1][1]}",
+                f"ReinOFF-{config.condition[1][2]}",
+                f"ReinON-{config.condition[1][2]}",
+                #         f"ReinOFF-{config.condition[1][3]}",
+                #         f"ReinON-{config.condition[1][3]}"
             ],
                 rotation=45)
         plt.tight_layout()
@@ -443,11 +482,19 @@ def line_plot(df, config, name, normalization, colors, bits):
     #     plt.savefig(f"./{config.output_folder}/line_plot/OFF_ON.png")
 
     # Uncertainty plots
-    with plt.style.context('seaborn-v0_8-paper'):
-        sns.set_theme(style='whitegrid', palette=['r', 'g'])
+    with plt.style.context('default'):
+        # sns.set_theme(style='whitegrid', palette=['r', 'g'])
         sns.set_context('talk')
-        fig, axes = plt.subplots(len(config.condition[1]), 2, figsize=(15, 10),
-                                 sharex='all', sharey='col')
+        plt.rcParams["font.family"] = "Arial"
+
+        fig, axes = plt.subplots(len(config.condition[1]), 2, figsize=(15, 12),
+                                 sharex=False, sharey=False)
+        sns.despine(top=True, right=True, left=False, bottom=False)
+
+        for ax_ in axes:
+            for axx__ in ax_:
+                axx__.tick_params(top=False, bottom=True, left=True,
+                                  right=False)
 
         df_mean = df[[f'{var}TargetFeedback', f'{var}TargetFeedforward',
                       f'{var}TargetTotalInfo', 'Reinforcement',
@@ -502,7 +549,6 @@ def line_plot(df, config, name, normalization, colors, bits):
                                 f'{f}'],
                             label=rein,
                             color=colors[color_counter])
-
                     ax.fill_between(np.arange(1, config.n_trials + 1),
                                     df_mean[(df_mean['Reinforcement'] == rein)
                                             & (df_mean[
@@ -526,6 +572,9 @@ def line_plot(df, config, name, normalization, colors, bits):
                     color_counter = color_counter + 1
 
                 ax.set_ylabel(f"{uncer}")
+                if config.__name__ == 'Config81Y':
+                    ax.axvline(x=5.5, color='gray', linestyle='--')
+                ax.set_ylabel(f"{uncer}")
                 [ax.axvline(x=pos, color='k', linestyle='--') for pos in
                  config.v_lines]
                 # r = matplotlib.patches.Rectangle((config.v_lines[0], 0),
@@ -535,17 +584,23 @@ def line_plot(df, config, name, normalization, colors, bits):
                 #                                  color='gray',
                 #                                  alpha=0.2)
                 # ax.add_patch(r)
-        axes[2, 0].set_ylim([2.5, 5.5])
-        axes[2, 1].set_ylim([80, 110])
+        for fb_ax in axes[:,0]:
+            fb_ax.set_ylim([2, 6])
+            fb_ax.set_yticks(np.arange(2, 7).tolist())
+            fb_ax.set_xlim([1, config.n_trials])
+            fb_ax.set_xlabel('Trials')
 
-        axes[-1, -1].set_xlim([1, config.n_trials])
+        for ff_ax in axes[:,1]:
+            ff_ax.set_ylim([80, 110])
+            # ff_ax.set_yticks(np.arange(2, 7).tolist())
+            ff_ax.set_xlim([1, config.n_trials])
+            ff_ax.set_xlabel('Trials')
+
+
         axes[-1, -1].legend()
-        axes[0, 0].set_title('TargetFeedback')
-        axes[0, 1].set_title('TargetFeedforward')
-        axes[-1, -1].set_xlabel('Trials')
+        axes[0, 0].set_title('Feedback (bits/s)')
+        axes[0, 1].set_title('Feedforward (bits/s)')
         axes[-1, 0].set_xlabel('Trials')
-
-
 
         plt.tight_layout()
         plt.savefig(f"./{config.output_folder}/line_plot/{name}")
