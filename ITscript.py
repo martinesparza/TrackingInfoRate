@@ -80,26 +80,32 @@ def load_data(path, filename, diagnostics, project='emg'):
 
     nanTrials = []
     for idx, tr in enumerate(cursor.T):
-        # breakpoint()
+        remove_trial = False
         if np.all(np.isnan(tr)):
             nanTrials.append(idx)
 
-        elif len(np.where(np.isnan(tr))[0]) >= 10:
+        elif np.any(np.isnan(tr)):
+
             groups = group_consecutive(np.where(np.isnan(tr))[0])
             for group in groups:
                 if len(group) > 10:
                     nanTrials.append(idx)
+                    remove_trial = True
                     break
 
-        elif len(np.where(np.isnan(tr))[0]) < 10:
-            tr = interpolate_nans(tr)
-            cursor[:, idx] = tr
+            if not remove_trial:
+                tr = interpolate_nans(tr)
+                cursor[:, idx] = tr
 
+    # if filename == 'RTact1_block1_cond8.csv':
+    #     breakpoint()
 
     # nanTrials = np.where(
     #     np.all(np.isnan(cursor), axis=0))  # trials with only nans
-    diagnostics.loc[-1] = [subj, block, cond, len(nanTrials)]
-    diagnostics = diagnostics.sort_index().reset_index(drop=True)
+    if nanTrials:
+        for trial_ in nanTrials:
+            diagnostics.loc[-1] = [subj, block, cond, trial_]
+            diagnostics = diagnostics.sort_index().reset_index(drop=True)
 
     allTrials = list(set(allTrials) - set(nanTrials))
     cursor = np.delete(cursor, nanTrials, 1)
@@ -132,7 +138,9 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby='',
                     # new_df['Cond'] = cond * np.ones(len(new_df)).astype(
                     #     'int32')
                     df = pd.concat((df, new_df))
-            diagnostics.to_csv(f"output_emg_tobedeleted/diagnostics.csv", index=False)
+            diagnostics.to_csv(f"./output_emg_v2/diagnostics.csv",
+                               index=False)
+
             dfmean = df.groupby(level=0).mean()
             dfstd = df.groupby(level=0).std()
 
@@ -259,11 +267,14 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby='',
         order = [4, 3]
 
         for col in range(cursor.shape[1]):
-            targetFB.append(
-                it.compute_FB([target[:, col]], cursor[:, col], order, VMD))
-            targetINFO.append(
-                it.compute_total_info([target[:, col]], cursor[:, col], order,
-                                      VMD))
+            try:
+                targetFB.append(
+                    it.compute_FB([target[:, col]], cursor[:, col], order, VMD))
+                targetINFO.append(
+                    it.compute_total_info([target[:, col]], cursor[:, col], order,
+                                          VMD))
+            except:
+                breakpoint()
         targetFF = np.array(targetINFO) - np.array(targetFB)
         # only colour
         colourFB = []
@@ -328,7 +339,7 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby='',
                 df = df.sort_index().reset_index(drop=True)
 
         df['TrialNumber'] = df['TrialNumber'].astype('int')
-        df.to_csv(f"output_emg_tobedeleted/output_{filename}",
+        df.to_csv(f"output_emg_v2/output_{filename}",
                   index=False)
 
         # plotting
@@ -358,5 +369,5 @@ if args.filename:
     compute_info_transfer(args.path, args.filename)
 else:
     diagnostics = pd.DataFrame(columns=['Subject', 'Block', 'Condition',
-                                        'TrialsRemoved'])
+                                        'RemovedTrial'])
     compute_info_transfer(exp=args.experiment, diagnostics=diagnostics)

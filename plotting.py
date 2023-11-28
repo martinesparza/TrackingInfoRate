@@ -243,14 +243,14 @@ def point_plot(df, config, name, normalization, colors, bits):
         order = [1, 2, 3, 4, 5, 6, 7, 8]
         colors_ = []
         colors = [
-            # (255, 182, 193),  # Cond 1
-            # (69, 249, 73),  # Cond 4
-            # (255, 102, 102),
-            # (128, 255, 0),
-            # (255, 0, 255),
-            # (0, 255, 127),
-            # (204, 0, 0),
-            # (76, 153, 0)
+            (255, 182, 193),  # Cond 1
+            (69, 249, 73),  # Cond 4
+            (255, 102, 102),
+            (128, 255, 0),
+            (255, 0, 255),
+            (0, 255, 127),
+            (204, 0, 0),
+            (76, 153, 0)
         ]
         [colors_.append('#%02x%02x%02x' % c) for c in colors]
         colors = colors_
@@ -263,7 +263,7 @@ def point_plot(df, config, name, normalization, colors, bits):
 
         sns.set_context('talk')
         fig, ax = plt.subplots(2, 3, figsize=(15, 12),
-                               sharex=False, sharey=False)
+                               sharex='col', sharey='row')
 
         sns.despine(top=True, right=True, left=False, bottom=False)
         for ax_ in ax:
@@ -380,19 +380,19 @@ def point_plot(df, config, name, normalization, colors, bits):
         ax[1, 1].set_ylabel('Feedforward (bits/s)')  # FB
         ax[1, 2].set_ylabel('Feedforward (bits/s)')  # FB
 
-        for fb_ax in ax[0,:]:
-            fb_ax.set_ylim([4, 5])
+        # for fb_ax in ax[0,:]:
+            # fb_ax.set_ylim([4, 5])
             # fb_ax.set_xlabel('Trials')
 
-        for ff_ax in ax[1,:]:
-            ff_ax.set_ylim([85, 100])
+        # for ff_ax in ax[1,:]:
+            # ff_ax.set_ylim([85, 100])
             # ff_ax.set_xlabel('Rein')
-            ff_ax.set_yticks(np.arange(85, 105, 5).tolist())
+            # ff_ax.set_yticks(np.arange(85, 105, 5).tolist())
 
 
-        ax[0, 2].set_ylim([4, 5])  # FB
-        ax[1, 2].set_ylim([85, 100])  # FB
-        ax[1, 2].set_yticks(np.arange(85, 105, 5).tolist())
+        # ax[0, 2].set_ylim([4, 5])  # FB
+        # ax[1, 2].set_ylim([85, 100])  # FB
+        # ax[1, 2].set_yticks(np.arange(85, 105, 5).tolist())
 
 
         for i in range(3):
@@ -403,8 +403,8 @@ def point_plot(df, config, name, normalization, colors, bits):
                 f"ReinON-{config.condition[1][1]}",
                 f"ReinOFF-{config.condition[1][2]}",
                 f"ReinON-{config.condition[1][2]}",
-                #         f"ReinOFF-{config.condition[1][3]}",
-                #         f"ReinON-{config.condition[1][3]}"
+                        f"ReinOFF-{config.condition[1][3]}",
+                        f"ReinON-{config.condition[1][3]}"
             ],
                 rotation=45)
             ax[0, i].set_xticklabels([
@@ -414,8 +414,8 @@ def point_plot(df, config, name, normalization, colors, bits):
                 f"ReinON-{config.condition[1][1]}",
                 f"ReinOFF-{config.condition[1][2]}",
                 f"ReinON-{config.condition[1][2]}",
-                #         f"ReinOFF-{config.condition[1][3]}",
-                #         f"ReinON-{config.condition[1][3]}"
+                        f"ReinOFF-{config.condition[1][3]}",
+                        f"ReinON-{config.condition[1][3]}"
             ],
                 rotation=45)
         plt.tight_layout()

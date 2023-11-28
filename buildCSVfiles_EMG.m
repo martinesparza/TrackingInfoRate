@@ -27,15 +27,16 @@ for subj = 1:length(disubj)
             end
             if ~isnan(reinforced)
                 if length(disubj(subj).name)==6
-                    sub_idx = length(disubj(subj).name(end));
+                    sub_idx = str2num(disubj(subj).name(end));
                 else
-                    sub_idx = length(disubj(subj).name(end-1:end));
+                    sub_idx = str2num(disubj(subj).name(end-1:end));
                 end
 
                 colorFB = squeeze(all(Color_target_alltrials==colorOK,2));
                 % T=table(CURSOR(61:420,:),colorFB(61:420,:),repmat(Seq_target(61:420),1,29),'VariableNames',{'cursor','colour','target'});
-                T=table(CURSOR_allsubjects(61:end,:, block, sub_idx),colorFB(61:420,:),repmat(Seq_target(61:end),1,29),'VariableNames',{'cursor','colour','target'});
-
+                cursor_data = CURSOR_allsubjects(61:end,:, block, sub_idx);
+                T=table(cursor_data,colorFB(61:420,:),repmat(Seq_target(61:end),1,29),'VariableNames',{'cursor','colour','target'});
+                
 
                 if block == 10
                     block_ = 0;
@@ -44,7 +45,7 @@ for subj = 1:length(disubj)
                 end
 
                 %writetable(T,['/data/preprocessed_emg/' disubj(subj).name '_block' num2str(block) '_cond' num2str(cond) '.csv'])
-                writetable(T,['/data/preprocessed_emg_new/' disubj(subj).name '_block' num2str(block_) '_cond' num2str(cond) '.csv'])
+                writetable(T,['/data/preprocessed_emg_v2/' disubj(subj).name '_block' num2str(block_) '_cond' num2str(cond) '.csv'])
 
             end
         end
