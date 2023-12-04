@@ -190,6 +190,8 @@ def point_plot(df, config, name, normalization, colors, bits):
 
     if config.__name__ == 'Config83Y':
         df = df[df['Stimulation'] == 'Sham']
+    elif config.__name__ == 'ConfigEMG':
+        df = df[~df['Participant'].isin(np.arange(28, 39))]
 
     df_pre = df[(df['TrialNumber']).isin(config.pre_trials)]
     df_train = df[(df['TrialNumber']).isin(config.train_trials)]

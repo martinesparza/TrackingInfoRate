@@ -51,7 +51,24 @@ def main():
                       hue='Interval')
 
     plt.tight_layout()
-    plt.savefig(f"./diagnostics/test.png")
+    plt.savefig(f"./diagnostics/overall_diagnostics.png")
+
+    subj_2_inspect = np.squeeze(np.where(df['Subject'].isin(np.arange(28,
+                                                                      39))))
+    # breakpoint()
+    df_subset = df.loc[subj_2_inspect]
+    with plt.style.context('default'):
+        plt.rcParams["font.family"] = "Arial"
+        palette = 'flare'
+
+        sns.set_context('notebook')
+        fig, ax = plt.subplots(figsize=(10, 5))
+        sns.countplot(df_subset, x="Subject", ax=ax, palette=palette,
+                      hue='Condition')
+        ax.set_ylabel('# removed trials')
+    plt.tight_layout()
+    plt.savefig(f"./diagnostics/subset.png")
+
 
 
     return
