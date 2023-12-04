@@ -40,7 +40,7 @@ class Config83Y:
 
 
 @dataclass
-class Config81Y_titr():
+class Config81Y_titr:
     n_trials: int = 36
     trials_to_plot: tuple = (1, 36)
     norm_trials = np.arange(4)
