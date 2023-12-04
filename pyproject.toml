@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "trackinginforate"
+version = "0.1.0"
+description = ""
+authors = ["Martin Esparza <martinesparza22.me@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.13"
+numpy = "^1.25.2"
+pandas = "2.0"
+knncmi = {git = "git@github.com:omesner/knncmi.git", rev = "master"}
+matplotlib = "^3.7.2"
+scipy = "^1.11.2"
+ipython = "^8.14.0"
+tqdm = "^4.66.1"
+seaborn = "^0.12.2"
+joblib = "^1.3.2"
+statsmodels = "^0.14.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,7 @@
+.idea/poetry.lock
+data/
+output*/
+preprocessed_data_81Y/
+figures*/
+*.pyc
+.idea/
