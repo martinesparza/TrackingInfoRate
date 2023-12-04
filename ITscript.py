@@ -37,11 +37,13 @@ def interpolate_nans(y):
     y[nans] = np.interp(x(nans), x(~nans), y[~nans])
     return y
 
+
 def group_consecutive(data):
     groups = []
-    for k, g in groupby(enumerate(data), lambda x:x[0]-x[1]):
+    for k, g in groupby(enumerate(data), lambda x: x[0] - x[1]):
         groups.append(list(map(itemgetter(1), g)))
     return groups
+
 
 # load data
 def load_data(path, filename, diagnostics, project='emg'):
@@ -77,7 +79,6 @@ def load_data(path, filename, diagnostics, project='emg'):
             subj = filename[5:6]
 
     # remove nans
-
     nanTrials = []
     for idx, tr in enumerate(cursor.T):
         remove_trial = False
@@ -97,11 +98,6 @@ def load_data(path, filename, diagnostics, project='emg'):
                 tr = interpolate_nans(tr)
                 cursor[:, idx] = tr
 
-    # if filename == 'RTact1_block1_cond8.csv':
-    #     breakpoint()
-
-    # nanTrials = np.where(
-    #     np.all(np.isnan(cursor), axis=0))  # trials with only nans
     if nanTrials:
         for trial_ in nanTrials:
             diagnostics.loc[-1] = [subj, block, cond, trial_]
@@ -112,8 +108,6 @@ def load_data(path, filename, diagnostics, project='emg'):
     colour = np.delete(colour, nanTrials, 1)
     target = np.delete(target, nanTrials, 1)
     # breakpoint()
-
-
 
     return cursor, colour, target, allTrials, diagnostics
 
@@ -132,9 +126,10 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby='',
                 filename = os.fsdecode(file)
                 # cond = int(filename[-5:-4])
                 if filename.endswith(".csv"):
-                    new_df, diagnostics = compute_info_transfer(args.path, filename,
-                                                   exp=exp,
-                                                   diagnostics=diagnostics)
+                    new_df, diagnostics = compute_info_transfer(args.path,
+                                                                filename,
+                                                                exp=exp,
+                                                                diagnostics=diagnostics)
                     # new_df['Cond'] = cond * np.ones(len(new_df)).astype(
                     #     'int32')
                     df = pd.concat((df, new_df))
@@ -259,8 +254,9 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby='',
 
 
     else:
-        cursor, colour, target, allTrials, diagnostics = load_data(path, filename,
-                                                       diagnostics)
+        cursor, colour, target, allTrials, diagnostics = load_data(path,
+                                                                   filename,
+                                                                   diagnostics)
         # only target
         targetFB = []
         targetINFO = []
@@ -269,9 +265,11 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby='',
         for col in range(cursor.shape[1]):
             try:
                 targetFB.append(
-                    it.compute_FB([target[:, col]], cursor[:, col], order, VMD))
+                    it.compute_FB([target[:, col]], cursor[:, col], order,
+                                  VMD))
                 targetINFO.append(
-                    it.compute_total_info([target[:, col]], cursor[:, col], order,
+                    it.compute_total_info([target[:, col]], cursor[:, col],
+                                          order,
                                           VMD))
             except:
                 breakpoint()
@@ -323,7 +321,6 @@ def compute_info_transfer(path=None, filename=None, exp=None, groupby='',
         for trial in np.arange(1, config.n_trials + 1):
             if len(df) > trial - 1:
                 if int(df.loc[trial - 1]['TrialNumber']) != trial:
-
                     df.loc[trial - 1 - 0.5] = [trial,
                                                np.nan, np.nan, np.nan, np.nan,
                                                np.nan,
