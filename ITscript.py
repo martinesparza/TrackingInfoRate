@@ -22,13 +22,13 @@ parser.add_argument("-c", "--config", type=str, default='')
 parser.add_argument("-vmd", "--vmd", type=int, default=15)
 
 
-
 # functions for dealing with nans
 def nan_helper(y):
     return np.isnan(y), lambda z: z.nonzero()[0]
 
 
 def interpolate_nans(y):
+    breakpoint()
     nans, x = nan_helper(y)
     y[nans] = np.interp(x(nans), x(~nans), y[~nans])
     return y
@@ -44,32 +44,10 @@ def group_consecutive(data):
 # load data
 def load_data(path, filename, diagnostics, config):
     csv = np.genfromtxt(path + filename, delimiter=",")
-    if config.__name__ == 'Config81Y':
-        cursor = csv[1:418, 0:config.n_trials]
-        colour = csv[1:418, config.n_trials:int(config.n_trials*2)]
-        target = csv[1:418, int(config.n_trials*2):int(config.n_trials*3)]
-        allTrials = list(range(config.n_trials))
-
-    # TODO: Fix the ranges for these scenarios
-    elif config.__name__ == 'Config83Y':
-        cursor = csv[1:418, 0:36]
-        colour = csv[1:418, 36:72]
-        target = csv[1:418, 72:108]
-        allTrials = list(range(36))
-
-    # TODO: Fix the ranges for these scenarios
-    elif config.__name__ == 'Config81Y_titr':
-        cursor = csv[1:418, 0:42]
-        colour = csv[1:418, 42:84]
-        target = csv[1:418, 84:126]
-        allTrials = list(range(42))
-
-    # TODO: Fix the ranges for these scenarios
-    elif config.__name__ == 'ConfigEMG':
-        cursor = csv[1:358, 0:29]
-        colour = csv[1:358, 29:58]
-        target = csv[1:358, 58:87]
-        allTrials = list(range(29))
+    cursor = csv[1:418, 0:config.n_trials]
+    colour = csv[1:418, config.n_trials:int(config.n_trials * 2)]
+    target = csv[1:418, int(config.n_trials * 2):int(config.n_trials * 3)]
+    allTrials = list(range(config.n_trials))
 
     if len(filename) == 21:  #
         subj = int(filename[3:4])
@@ -115,8 +93,6 @@ def load_data(path, filename, diagnostics, config):
 
 def compute_info_transfer(path=None, filename=None, config=None,
                           diagnostics=None):
-
-
     if filename is None:
         df = pd.DataFrame()
         directory = os.fsencode(args.input_path)
@@ -195,23 +171,24 @@ def compute_info_transfer(path=None, filename=None, config=None,
                                            'BothTotalInfo'])
         df['TrialNumber'] = df['TrialNumber'] + 1
 
-        if config.__name__=='ConfigEMG':
-            for trial in np.arange(1, config.n_trials + 1):
-                if len(df) > trial - 1:
-                    if int(df.loc[trial - 1]['TrialNumber']) != trial:
-                        df.loc[trial - 1 - 0.5] = [trial,
-                                                   np.nan, np.nan, np.nan, np.nan,
-                                                   np.nan,
-                                                   np.nan, np.nan, np.nan, np.nan]
-
-                        df = df.sort_index().reset_index(drop=True)
-                else:
-                    df.loc[trial - 1] = ([trial,
-                                          np.nan, np.nan, np.nan, np.nan,
-                                          np.nan,
-                                          np.nan, np.nan, np.nan, np.nan])
+        for trial in np.arange(1, config.n_trials + 1):
+            if len(df) > trial - 1:
+                if int(df.loc[trial - 1]['TrialNumber']) != trial:
+                    df.loc[trial - 1 - 0.5] = [trial,
+                                               np.nan, np.nan, np.nan,
+                                               np.nan,
+                                               np.nan,
+                                               np.nan, np.nan, np.nan,
+                                               np.nan]
 
                     df = df.sort_index().reset_index(drop=True)
+            else:
+                df.loc[trial - 1] = ([trial,
+                                      np.nan, np.nan, np.nan, np.nan,
+                                      np.nan,
+                                      np.nan, np.nan, np.nan, np.nan])
+
+                df = df.sort_index().reset_index(drop=True)
 
         df['TrialNumber'] = df['TrialNumber'].astype('int')
         df.to_csv(f"{args.out_path}/output_{filename}",
@@ -240,7 +217,6 @@ if __name__ == '__main__':
         config = Config83Y
     elif args.config == 'emg':
         config = ConfigEMG
-
 
     diagnostics = pd.DataFrame(columns=['Subject', 'Block', 'Condition',
                                         'RemovedTrial'])
