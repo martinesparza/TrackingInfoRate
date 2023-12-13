@@ -53,16 +53,35 @@ through it with an example.
 ## Run the pipeline
 
 
-I will give an explanation of what's going on but first, to run the code to 
-extract feedback and feedforward measures:
+I will give an explanation of what's going on but first, to get some info on the pipeline you can run:
+```shell
+$ poetry run python3 ITscript.py --help
+# usage: ITscript.py [-h] [-in_path INPUT_PATH] [-out_path OUT_PATH] [-c CONFIG] [-vmd VMD]
+
+# options:
+#  -h, --help            show this help message and exit
+#  -in_path INPUT_PATH, --input_path INPUT_PATH
+#  -out_path OUT_PATH, --out_path OUT_PATH
+#  -c CONFIG, --config CONFIG
+#  -vmd VMD, --vmd VMD
+
 ```
-$ poetry run python3 ITscript.py
+
+This script takes as input data csvs in the folder specified in ``in_path`` with columns as trials and rows as time 
+points. There are approximately 420 time points (depends on the experiment) which come from sampling st 60 Hz. Then
+each column is a trial, and they are grouped into "cursor", "colour", and "target". In our analysis we don't actually 
+make much use of the colour data, but we leave it there to make the scripts run well. The default value for VMD is 15, 
+corresponding to 250 ms.
+
+The options for the config are:
+- ``'81'``
+- ``'81_titr'``
+- ``'83'``
+- ``'emg'``
+
+You can run the example:
+```shell
+$ poetry run python3 ITscript.py -in_path './exampleData/' -out_path './exampleData_out/' -c '81'
 ```
 
-This script takes as input data with columns as trials and rows as time 
-points. There are approximately 420 time points which coming from sampling 
-at 60 Hz. Then each column is a trial, and they are grouped into "cursor", 
-"colour", and "target". In our analysis we don't actually make much use of 
-the colour data, but we leave it there to make the scripts run well. 
-
-
+Thats all!

@@ -48,12 +48,19 @@ def load_data(path, filename, diagnostics, config):
     target = csv[1:418, int(config.n_trials * 2):int(config.n_trials * 3)]
     allTrials = list(range(config.n_trials))
 
-    if config.__name__ != 'ConfigEMG':
+    if (config.__name__ == 'Config81Y') or (config.__name__ == 'Config83Y'):
         if len(filename) == 21:  #
             subj = int(filename[3:4])
         else:
             subj = int(filename[3:5])
-    else:
+
+    if config.__name__ == 'Config81Y_titr':
+        if len(filename) == 15:  #
+            subj = int(filename[3:4])
+        else:
+            subj = int(filename[3:5])
+
+    elif config.__name__ == 'ConfigEMG':
         if len(filename) == 23:  #
             subj = int(filename[5:6])
         else:
