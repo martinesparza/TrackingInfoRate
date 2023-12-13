@@ -1,18 +1,31 @@
 ﻿# Information-theoretic Analysis of tracking data
 Adapted by Martin Esparza
 
-> ❗️ Disclaimer: This repo is tested on Linux. I am not sure how this will 
-> work on windows. 
+> ❗️ Disclaimer: I am assuming you have git and python installed
 
 > ❗️ 2nd Disclaimer: Please take some time to understand the Poetry tool 
 > (below) since there are custom packages needed to run these scripts
+
 
 ## Step 1: Activate ```poetry ``` environment
 First of all, you should familiarize yourself with how the tool Poetry 
 works. It is a great tool to manage package dependencies and make sure 
 the project will run on your computer after running on mine!!!
 Their [online documentation](https://python-poetry.org/docs/) is quite 
-decent. Follow the instructions online to install poetry on your machine. 
+decent. Follow these instructions to install poetry on your machine. 
+
+# WINDOWS INSTALL:
+Open a PowerShell terminal and run:
+```shell
+$ (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+```
+
+This will install poetry on your machine but it still won't added to the PATH environment variable. 
+For that:
+1. Open System Properties
+2. Go to Advanced options and System Variables on the bottom right
+3. Click on the Path variable and in the bottom window click on new
+4. Add the path where poetry is. Normally this is: C:\Users\esparza\AppData\Roaming\Python\Scripts
 
 Once you have poetry install in your machine you can test if its working by 
 running in a terminal: 
