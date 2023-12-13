@@ -28,7 +28,6 @@ def nan_helper(y):
 
 
 def interpolate_nans(y):
-    breakpoint()
     nans, x = nan_helper(y)
     y[nans] = np.interp(x(nans), x(~nans), y[~nans])
     return y
@@ -49,10 +48,17 @@ def load_data(path, filename, diagnostics, config):
     target = csv[1:418, int(config.n_trials * 2):int(config.n_trials * 3)]
     allTrials = list(range(config.n_trials))
 
-    if len(filename) == 21:  #
-        subj = int(filename[3:4])
+    if config.__name__ != 'ConfigEMG':
+        if len(filename) == 21:  #
+            subj = int(filename[3:4])
+        else:
+            subj = int(filename[3:5])
     else:
-        subj = int(filename[3:5])
+        if len(filename) == 23:  #
+            subj = int(filename[5:6])
+        else:
+            subj = int(filename[5:7])
+
 
     cond = filename[-5:-4]
     block = filename[-11:-10]

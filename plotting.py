@@ -78,8 +78,8 @@ def main():
     files = glob.glob(f"{args.folder}/o*.csv")
     df = pd.DataFrame()
     for csv in files:
+        # breakpoint()
         file_name = re.split('/', string=csv)[-1]
-        breakpoint()
         if len(file_name) == config.name_length[0]:  #
             participant = int(
                 file_name[config.name_length[1]:config.name_length[2]])
@@ -362,7 +362,7 @@ def point_plot(df, config, name, normalization, colors, bits):
         #               y=f"{var}TargetFeedback", x='Stimulation',
         #               ax=ax[0, 2],
         #               errorbar='se', join=False, palette=colors)
-        sns.pointplot(df_post[df_post['Participant'] != 1],
+        sns.pointplot(df_post,
                       y=f"{var}TargetFeedforward", x='Condition',
                       ax=ax[1, 2], order=order,
                       errorbar='se', join=False, palette=colors)
@@ -405,8 +405,8 @@ def point_plot(df, config, name, normalization, colors, bits):
                 f"ReinON-{config.condition[1][1]}",
                 f"ReinOFF-{config.condition[1][2]}",
                 f"ReinON-{config.condition[1][2]}",
-                        f"ReinOFF-{config.condition[1][3]}",
-                        f"ReinON-{config.condition[1][3]}"
+                        # f"ReinOFF-{config.condition[1][3]}",
+                        # f"ReinON-{config.condition[1][3]}"
             ],
                 rotation=45)
             ax[0, i].set_xticklabels([
@@ -416,8 +416,8 @@ def point_plot(df, config, name, normalization, colors, bits):
                 f"ReinON-{config.condition[1][1]}",
                 f"ReinOFF-{config.condition[1][2]}",
                 f"ReinON-{config.condition[1][2]}",
-                        f"ReinOFF-{config.condition[1][3]}",
-                        f"ReinON-{config.condition[1][3]}"
+                        # f"ReinOFF-{config.condition[1][3]}",
+                        # f"ReinON-{config.condition[1][3]}"
             ],
                 rotation=45)
         plt.tight_layout()
