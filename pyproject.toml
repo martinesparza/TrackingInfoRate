@@ -6,7 +6,7 @@ authors = ["Martin Esparza <martinesparza22.me@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.13"
+python = ">=3.9,<3.12"
 numpy = "^1.25.2"
 pandas = "2.0"
 knncmi = {git = "git@github.com:omesner/knncmi.git", rev = "master"}
