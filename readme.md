@@ -94,7 +94,7 @@ The options for the config are:
 
 You can run the example:
 ```shell
-$ poetry run python3 ITscript.py -in_path './exampleData/' -out_path './exampleData_out/' -c '81'
+$ poetry run python ITscript.py -in_path '.\exampleData\' -out_path '.\exampleData_out\' -c '81'
 ```
 
-Thats all!
+Thats all! 
